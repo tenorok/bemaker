@@ -1,13 +1,33 @@
 const assert = require('chai').assert,
-    Concat = require('../modules/Concat');
+    path = require('path'),
+    Concat = require('../modules/Concat'),
 
-describe('Модуль Concat', function() {
+    files = {
+        a: path.join(__dirname, 'fixtures/files/a.js'),
+        b: path.join(__dirname, 'fixtures/files/b.js')
+    };
 
-    it('Соединение двух файлов', function() {
-        assert.equal(new Concat([
-            './fixtures/files/a.js',
-            './fixtures/files/b.js'
-        ]).get(), 'var a;var b;');
+describe('Модуль Concat.', function() {
+
+    it('Получить содержимое одного файла', function(done) {
+        Concat.readFile(files.a).then(function(content) {
+            assert.equal(content, 'var a;\n');
+            done();
+        }).catch(function(err) {
+                done(err);
+            });
+    });
+
+    it('Соединение двух файлов', function(done) {
+        new Concat([
+            files.a,
+            files.b
+        ]).toString().then(function(content) {
+                assert.equal(content, 'var a;\nvar b;\n');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
     });
 
 });
