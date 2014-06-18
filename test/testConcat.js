@@ -4,7 +4,8 @@ const assert = require('chai').assert,
 
     files = {
         a: path.join(__dirname, 'fixtures/files/a.js'),
-        b: path.join(__dirname, 'fixtures/files/b.js')
+        b: path.join(__dirname, 'fixtures/files/b.js'),
+        c: path.join(__dirname, 'fixtures/files/c.js')
     };
 
 describe('Модуль Concat.', function() {
@@ -24,6 +25,18 @@ describe('Модуль Concat.', function() {
             files.b
         ]).toString().then(function(content) {
                 assert.equal(content, 'var a;\nvar b;\n');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
+    });
+
+    it('Добавление файлов', function(done) {
+        new Concat([
+            files.a,
+            files.b
+        ]).add([files.c]).toString().then(function(content) {
+                assert.equal(content, 'var a;\nvar b;\nvar c;\n');
                 done();
             }).catch(function(err) {
                 done(err);

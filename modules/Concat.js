@@ -13,6 +13,17 @@ function Concat(files) {
 Concat.prototype = {
 
     /**
+     * Добавить файлы.
+     *
+     * @param {string[]} files Список абсолютных путей
+     * @returns {Concat}
+     */
+    add: function(files) {
+        this.files = this.files.concat(files);
+        return this;
+    },
+
+    /**
      * Получить объединённое содержимое всех файлов.
      *
      * @returns {Promise}
