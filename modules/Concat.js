@@ -7,7 +7,14 @@ const fs = require('fs');
  * @param {string[]} files Список абсолютных путей
  */
 function Concat(files) {
-    this.files = files;
+
+    /**
+     * Список абсолютных путей.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this._files = files;
 }
 
 Concat.prototype = {
@@ -19,8 +26,23 @@ Concat.prototype = {
      * @returns {Concat}
      */
     add: function(files) {
-        this.files = this.files.concat(files);
+        this._files = this._files.concat(files);
         return this;
+    },
+
+    /**
+     * Установить/получить список абсолютных путей.
+     *
+     * @param {string[]} [files] Список абсолютных путей
+     * @returns {Concat|string[]}
+     */
+    files: function(files) {
+        if(files) {
+            this._files = files;
+            return this;
+        }
+
+        return this._files;
     },
 
     /**
@@ -30,7 +52,7 @@ Concat.prototype = {
      */
     toString: function() {
         return new Promise(function(resolve) {
-            Promise.all(this.files.reduce(function(content, file) {
+            Promise.all(this._files.reduce(function(content, file) {
                 content.push(Concat.readFile(file));
                 return content;
             }, [])).then(function(content) {

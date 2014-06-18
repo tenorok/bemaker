@@ -43,4 +43,26 @@ describe('Модуль Concat.', function() {
             });
     });
 
+    it('Установка списка файлов', function(done) {
+        new Concat().files([
+                files.a,
+                files.b
+            ]).toString().then(function(content) {
+                assert.equal(content, 'var a;\nvar b;\n');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
+    });
+
+    it('Получение списка файлов', function() {
+        assert.deepEqual(new Concat([
+            files.a,
+            files.b
+        ]).files(), [
+            files.a,
+            files.b
+        ]);
+    });
+
 });
