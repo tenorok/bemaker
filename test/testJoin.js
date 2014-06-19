@@ -28,6 +28,18 @@ describe('Модуль Join.', function() {
             });
     });
 
+    it('Соединение файла и строки', function(done) {
+        new Join([
+            { file: files.a },
+            'b'
+        ]).toString().then(function(content) {
+                assert.equal(content, 'var a;\nb');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
+    });
+
     it('Соединение двух файлов', function(done) {
         new Join([
             { file: files.a },
@@ -40,12 +52,12 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Добавление файлов', function(done) {
+    it('Добавление данных', function(done) {
         new Join([
             { file: files.a },
             { file: files.b }
-        ]).add([{ file: files.c }]).toString().then(function(content) {
-                assert.equal(content, 'var a;\nvar b;\nvar c;\n');
+        ]).add([{ file: files.c }, 'd']).toString().then(function(content) {
+                assert.equal(content, 'var a;\nvar b;\nvar c;\nd');
                 done();
             }).catch(function(err) {
                 done(err);
