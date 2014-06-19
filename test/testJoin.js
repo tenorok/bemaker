@@ -1,6 +1,6 @@
 const assert = require('chai').assert,
     path = require('path'),
-    Concat = require('../modules/Concat'),
+    Join = require('../modules/Join'),
 
     files = {
         a: path.join(__dirname, 'fixtures/files/a.js'),
@@ -8,10 +8,19 @@ const assert = require('chai').assert,
         c: path.join(__dirname, 'fixtures/files/c.js')
     };
 
-describe('Модуль Concat.', function() {
+describe('Модуль Join.', function() {
+
+    it('Объединить две строки', function(done) {
+        new Join(['a', 'b']).toString().then(function(content) {
+            assert.equal(content, 'ab');
+            done();
+        }).catch(function(err) {
+                done(err);
+            });
+    });
 
     it('Получить содержимое одного файла', function(done) {
-        Concat.readFile(files.a).then(function(content) {
+        Join.readFile(files.a).then(function(content) {
             assert.equal(content, 'var a;\n');
             done();
         }).catch(function(err) {
@@ -20,9 +29,9 @@ describe('Модуль Concat.', function() {
     });
 
     it('Соединение двух файлов', function(done) {
-        new Concat([
-            files.a,
-            files.b
+        new Join([
+            { file: files.a },
+            { file: files.b }
         ]).toString().then(function(content) {
                 assert.equal(content, 'var a;\nvar b;\n');
                 done();
@@ -32,10 +41,10 @@ describe('Модуль Concat.', function() {
     });
 
     it('Добавление файлов', function(done) {
-        new Concat([
-            files.a,
-            files.b
-        ]).add([files.c]).toString().then(function(content) {
+        new Join([
+            { file: files.a },
+            { file: files.b }
+        ]).add([{ file: files.c }]).toString().then(function(content) {
                 assert.equal(content, 'var a;\nvar b;\nvar c;\n');
                 done();
             }).catch(function(err) {
@@ -43,26 +52,16 @@ describe('Модуль Concat.', function() {
             });
     });
 
-    it('Установка списка файлов', function(done) {
-        new Concat().files([
-                files.a,
-                files.b
+    it('Добавление списка файлов', function(done) {
+        new Join([{ file: files.a }]).addFiles([
+                files.b,
+                files.c
             ]).toString().then(function(content) {
-                assert.equal(content, 'var a;\nvar b;\n');
+                assert.equal(content, 'var a;\nvar b;\nvar c;\n');
                 done();
             }).catch(function(err) {
                 done(err);
             });
-    });
-
-    it('Получение списка файлов', function() {
-        assert.deepEqual(new Concat([
-            files.a,
-            files.b
-        ]).files(), [
-            files.a,
-            files.b
-        ]);
     });
 
 });
