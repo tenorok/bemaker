@@ -14,7 +14,7 @@ const fs = require('fs'),
 function Join(data) {
 
     /**
-     * Список строк и абсолютных путей до файлов к объединению.
+     * Данные.
      *
      * @private
      * @type {array}
@@ -45,6 +45,17 @@ Join.prototype = {
         this._data = this._data.concat(files.map(function(file) {
             return { file: file };
         }));
+        return this;
+    },
+
+    /**
+     * Установить строку в начало.
+     *
+     * @param {string} before Строка
+     * @returns {Join}
+     */
+    before: function(before) {
+        this._data.unshift(before);
         return this;
     },
 
