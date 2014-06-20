@@ -76,4 +76,16 @@ describe('Модуль Join.', function() {
             });
     });
 
+    it('Соединение с закешированным файлом', function(done) {
+        new Join([
+            { file: files.a },
+            { file: files.b, content: 'cache b;\n' }
+        ]).toString().then(function(content) {
+                assert.equal(content, 'var a;\ncache b;\n');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
+    });
+
 });

@@ -4,7 +4,11 @@ const fs = require('fs');
  * Модуль для объединения строк и содержимого файлов.
  *
  * @constructor
- * @param {array} data Список строк и абсолютных путей до файлов к объединению
+ * @param {array} data Данные могут быть следующего формата:
+ *      - {string} string Обычная строка
+ *      - {object} file Объект с описанием файла
+ *          - {string} file.file Имя файла
+ *          - {string} [file.content] Содержимое файла, если файл не нужно читать
  */
 function Join(data) {
 
@@ -22,7 +26,7 @@ Join.prototype = {
     /**
      * Добавить данные к объединению.
      *
-     * @param {array} data Список строк и абсолютных путей до файлов к объединению
+     * @param {array} data Данные
      * @returns {Join}
      */
     add: function(data) {
@@ -55,7 +59,7 @@ Join.prototype = {
                 if(typeof part === 'string') {
                     content.push(part);
                 } else {
-                    content.push(Join.readFile(part.file));
+                    content.push(part.content || Join.readFile(part.file));
                 }
 
                 return content;
