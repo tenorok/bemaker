@@ -1,4 +1,5 @@
-const fs = require('fs');
+const fs = require('fs'),
+    Promise = require('bluebird');
 
 /**
  * Модуль для объединения строк и содержимого файлов.
