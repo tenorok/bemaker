@@ -104,7 +104,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    describe('before* / each*.', function() {
+    describe('before*.', function() {
 
         it('before строкой', function(done) {
             new Join(['a', 'b']).before('{').toString().then(function(content) {
@@ -127,6 +127,28 @@ describe('Модуль Join.', function() {
         it('Установить данные после before', function(done) {
             new Join().before('{').data(['a', 'b']).toString().then(function(content) {
                 assert.equal(content, '{ab');
+                done();
+            }).catch(function(err) {
+                    done(err);
+                });
+        });
+
+    });
+
+    describe('after*.', function() {
+
+        it('after строкой', function(done) {
+            new Join(['a', 'b']).after('}').toString().then(function(content) {
+                assert.equal(content, 'ab}');
+                done();
+            }).catch(function(err) {
+                    done(err);
+                });
+        });
+
+        it('after функцией', function(done) {
+            new Join(['a', 'b']).after(function() { return '}'; }).toString().then(function(content) {
+                assert.equal(content, 'ab}');
                 done();
             }).catch(function(err) {
                     done(err);

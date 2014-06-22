@@ -28,6 +28,14 @@ function Join(data) {
      * @type {string}
      */
     this._before = '';
+
+    /**
+     * Строка завершающая объединённое содержимое.
+     *
+     * @private
+     * @type {string}
+     */
+    this._after = '';
 }
 
 Join.prototype = {
@@ -72,13 +80,24 @@ Join.prototype = {
     },
 
     /**
-     * Установить строку в начало.
+     * Установить первую строку.
      *
      * @param {string|function} before Строка
      * @returns {Join}
      */
     before: function(before) {
         this._before = before;
+        return this;
+    },
+
+    /**
+     * Установить последнюю строку.
+     *
+     * @param {string|function} after Строка
+     * @returns {Join}
+     */
+    after: function(after) {
+        this._after = after;
         return this;
     },
 
@@ -90,7 +109,8 @@ Join.prototype = {
     toString: function() {
         return new Promise(function(resolve) {
 
-            this._data.unshift(typeof this._before === 'function' ? this._before.call(this) : this._before);
+            this._data.unshift(this._getAdditionalString(this._before));
+            this._data.push(this._getAdditionalString(this._after));
 
             Promise.all(this._data.reduce(function(content, part) {
 
@@ -105,6 +125,18 @@ Join.prototype = {
                 resolve(content.join(''));
             });
         }.bind(this));
+    },
+
+    /**
+     * Получить дополнительную к данным строку.
+     *
+     * @private
+     * @param {string|function} string Дополнительная строка
+     * @param {*[]} [data] Дополнительные данные для передачи аргументов в функцию
+     * @returns {string}
+     */
+    _getAdditionalString: function(string, data) {
+        return typeof string === 'function' ? string.apply(this, data || []) : string;
     }
 
 };
