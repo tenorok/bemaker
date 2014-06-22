@@ -5,7 +5,7 @@ const fs = require('fs'),
  * Модуль для объединения строк и содержимого файлов.
  *
  * @constructor
- * @param {array} data Данные могут быть следующего формата:
+ * @param {*[]} data Данные могут быть следующего формата:
  *      - {string} string Обычная строка
  *      - {object} file Объект с описанием файла
  *          - {string} file.file Имя файла
@@ -17,9 +17,17 @@ function Join(data) {
      * Данные.
      *
      * @private
-     * @type {array}
+     * @type {*[]}
      */
     this._data = data;
+
+    /**
+     * Строка предваряющая объединённое содержимое.
+     *
+     * @private
+     * @type {string}
+     */
+    this._before = '';
 }
 
 Join.prototype = {
@@ -27,8 +35,8 @@ Join.prototype = {
     /**
      * Установить/получить данные.
      *
-     * @param {array} [data] Данные
-     * @returns {Join|array}
+     * @param {*[]} [data] Данные
+     * @returns {Join|*[]}
      */
     data: function(data) {
         if(data) {
@@ -42,7 +50,7 @@ Join.prototype = {
     /**
      * Добавить данные к объединению.
      *
-     * @param {array} data Данные
+     * @param {*[]} data Данные
      * @returns {Join}
      */
     add: function(data) {
@@ -70,7 +78,7 @@ Join.prototype = {
      * @returns {Join}
      */
     before: function(before) {
-        this._data.unshift(before);
+        this._before = before;
         return this;
     },
 
@@ -81,6 +89,9 @@ Join.prototype = {
      */
     toString: function() {
         return new Promise(function(resolve) {
+
+            this._data.unshift(this._before);
+
             Promise.all(this._data.reduce(function(content, part) {
 
                 if(typeof part === 'string') {
