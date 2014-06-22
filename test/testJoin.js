@@ -106,7 +106,7 @@ describe('Модуль Join.', function() {
 
     describe('before*.', function() {
 
-        it('before строкой', function(done) {
+        it('Строкой', function(done) {
             new Join(['a', 'b']).before('{').toString().then(function(content) {
                 assert.equal(content, '{ab');
                 done();
@@ -115,7 +115,7 @@ describe('Модуль Join.', function() {
                 });
         });
 
-        it('before функцией', function(done) {
+        it('Функцией', function(done) {
             new Join(['a', 'b']).before(function() { return '{'; }).toString().then(function(content) {
                 assert.equal(content, '{ab');
                 done();
@@ -133,11 +133,24 @@ describe('Модуль Join.', function() {
                 });
         });
 
+        describe('beforeEach', function() {
+
+            it('Строкой', function(done) {
+                new Join(['a', 'b']).beforeEach(',').toString().then(function(content) {
+                    assert.equal(content, ',a,b');
+                    done();
+                }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+        });
+
     });
 
     describe('after*.', function() {
 
-        it('after строкой', function(done) {
+        it('Строкой', function(done) {
             new Join(['a', 'b']).after('}').toString().then(function(content) {
                 assert.equal(content, 'ab}');
                 done();
@@ -146,7 +159,7 @@ describe('Модуль Join.', function() {
                 });
         });
 
-        it('after функцией', function(done) {
+        it('Функцией', function(done) {
             new Join(['a', 'b']).after(function() { return '}'; }).toString().then(function(content) {
                 assert.equal(content, 'ab}');
                 done();

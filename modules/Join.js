@@ -30,6 +30,14 @@ function Join(data) {
     this._before = '';
 
     /**
+     * Строка предваряющая каждый элемент данных.
+     *
+     * @private
+     * @type {string}
+     */
+    this._beforeEach = '';
+
+    /**
      * Строка завершающая объединённое содержимое.
      *
      * @private
@@ -91,6 +99,17 @@ Join.prototype = {
     },
 
     /**
+     * Установить строку предваряющую каждый элемент.
+     *
+     * @param {string|function} beforeEach Строка
+     * @returns {Join}
+     */
+    beforeEach: function(beforeEach) {
+        this._beforeEach = beforeEach;
+        return this;
+    },
+
+    /**
      * Установить последнюю строку.
      *
      * @param {string|function} after Строка
@@ -109,10 +128,13 @@ Join.prototype = {
     toString: function() {
         return new Promise(function(resolve) {
 
-            this._data.unshift(this._getAdditionalString(this._before));
-            this._data.push(this._getAdditionalString(this._after));
+            var content = [
+                this._getAdditionalString(this._before)
+            ];
 
             Promise.all(this._data.reduce(function(content, part) {
+
+                content.push(this._getAdditionalString(this._beforeEach));
 
                 if(typeof part === 'string') {
                     content.push(part);
@@ -121,9 +143,10 @@ Join.prototype = {
                 }
 
                 return content;
-            }, [])).then(function(content) {
+                }.bind(this), content)).then(function(content) {
+                content.push(this._getAdditionalString(this._after));
                 resolve(content.join(''));
-            });
+            }.bind(this));
         }.bind(this));
     },
 
