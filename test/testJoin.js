@@ -144,6 +144,15 @@ describe('Модуль Join.', function() {
                     });
             });
 
+            it('Функцией', function(done) {
+                new Join(['a', 'b']).beforeEach(function(i) { return i + ')'; }).toString().then(function(content) {
+                    assert.equal(content, '0)a1)b');
+                    done();
+                }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
         });
 
     });

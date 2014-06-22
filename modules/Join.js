@@ -88,9 +88,16 @@ Join.prototype = {
     },
 
     /**
+     * Колбек вызывается перед установкой
+     * первой строки.
+     *
+     * @callback Join~beforeCallback
+     */
+
+    /**
      * Установить первую строку.
      *
-     * @param {string|function} before Строка
+     * @param {string|Join~beforeCallback} before Строка
      * @returns {Join}
      */
     before: function(before) {
@@ -99,9 +106,17 @@ Join.prototype = {
     },
 
     /**
+     * Колбек вызывается перед установкой
+     * предваряющей строки для каждого элемента.
+     *
+     * @callback Join~beforeEachCallback
+     * @param {number} index Индекс элемента
+     */
+
+    /**
      * Установить строку предваряющую каждый элемент.
      *
-     * @param {string|function} beforeEach Строка
+     * @param {string|Join~beforeEachCallback} beforeEach Строка
      * @returns {Join}
      */
     beforeEach: function(beforeEach) {
@@ -110,9 +125,16 @@ Join.prototype = {
     },
 
     /**
+     * Колбек вызывается перед установкой
+     * последней строки.
+     *
+     * @callback Join~afterCallback
+     */
+
+    /**
      * Установить последнюю строку.
      *
-     * @param {string|function} after Строка
+     * @param {string|Join~afterCallback} after Строка
      * @returns {Join}
      */
     after: function(after) {
@@ -132,9 +154,9 @@ Join.prototype = {
                 this._getAdditionalString(this._before)
             ];
 
-            Promise.all(this._data.reduce(function(content, part) {
+            Promise.all(this._data.reduce(function(content, part, index) {
 
-                content.push(this._getAdditionalString(this._beforeEach));
+                content.push(this._getAdditionalString(this._beforeEach, [index]));
 
                 if(typeof part === 'string') {
                     content.push(part);
@@ -143,7 +165,7 @@ Join.prototype = {
                 }
 
                 return content;
-                }.bind(this), content)).then(function(content) {
+            }.bind(this), content)).then(function(content) {
                 content.push(this._getAdditionalString(this._after));
                 resolve(content.join(''));
             }.bind(this));
