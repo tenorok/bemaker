@@ -177,6 +177,28 @@ describe('Модуль Join.', function() {
                 });
         });
 
+        describe('afterEach', function() {
+
+            it('Строкой', function(done) {
+                new Join(['a', 'b']).afterEach(',').toString().then(function(content) {
+                    assert.equal(content, 'a,b,');
+                    done();
+                }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+            it('Функцией', function(done) {
+                new Join(['a', 'b']).afterEach(function(i) { return '(' + i; }).toString().then(function(content) {
+                    assert.equal(content, 'a(0b(1');
+                    done();
+                }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+        });
+
     });
 
 });

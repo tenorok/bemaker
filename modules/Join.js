@@ -44,6 +44,14 @@ function Join(data) {
      * @type {string}
      */
     this._after = '';
+
+    /**
+     * Строка последующая за каждым элементом данных.
+     *
+     * @private
+     * @type {string}
+     */
+    this._afterEach = '';
 }
 
 Join.prototype = {
@@ -143,6 +151,25 @@ Join.prototype = {
     },
 
     /**
+     * Колбек вызывается перед установкой
+     * последующей строки для каждого элемента.
+     *
+     * @callback Join~afterEachCallback
+     * @param {number} index Индекс элемента
+     */
+
+    /**
+     * Установить строку последующую за каждым элементом.
+     *
+     * @param {string|Join~afterEachCallback} afterEach Строка
+     * @returns {Join}
+     */
+    afterEach: function(afterEach) {
+        this._afterEach = afterEach;
+        return this;
+    },
+
+    /**
      * Получить объединённое содержимое всех данных.
      *
      * @returns {Promise}
@@ -163,6 +190,8 @@ Join.prototype = {
                 } else {
                     content.push(part.content || Join.readFile(part.file));
                 }
+
+                content.push(this._getAdditionalString(this._afterEach, [index]));
 
                 return content;
             }.bind(this), content)).then(function(content) {
