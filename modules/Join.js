@@ -74,7 +74,7 @@ Join.prototype = {
     /**
      * Установить строку в начало.
      *
-     * @param {string} before Строка
+     * @param {string|function} before Строка
      * @returns {Join}
      */
     before: function(before) {
@@ -90,7 +90,7 @@ Join.prototype = {
     toString: function() {
         return new Promise(function(resolve) {
 
-            this._data.unshift(this._before);
+            this._data.unshift(typeof this._before === 'function' ? this._before.call(this) : this._before);
 
             Promise.all(this._data.reduce(function(content, part) {
 

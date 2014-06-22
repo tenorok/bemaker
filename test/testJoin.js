@@ -115,6 +115,15 @@ describe('Модуль Join.', function() {
                 });
         });
 
+        it('before функцией', function(done) {
+            new Join(['a', 'b']).before(function() { return '{'; }).toString().then(function(content) {
+                assert.equal(content, '{ab');
+                done();
+            }).catch(function(err) {
+                    done(err);
+                });
+        });
+
         it('Установить данные после before', function(done) {
             new Join().before('{').data(['a', 'b']).toString().then(function(content) {
                 assert.equal(content, '{ab');
