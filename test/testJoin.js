@@ -28,7 +28,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Соединение файла и строки', function(done) {
+    it('Соединить файл и строку', function(done) {
         new Join([
             { file: files.a },
             'b'
@@ -40,7 +40,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Соединение двух файлов', function(done) {
+    it('Соединенить два файла', function(done) {
         new Join([
             { file: files.a },
             { file: files.b }
@@ -52,7 +52,23 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Добавление данных', function(done) {
+    it('Установить данные', function(done) {
+        new Join().data([
+                { file: files.a },
+                'b'
+            ]).toString().then(function(content) {
+                assert.equal(content, 'var a;\nb');
+                done();
+            }).catch(function(err) {
+                done(err);
+            });
+    });
+
+    it('Получить данные данные', function() {
+        assert.deepEqual(new Join().data(['a', 'b']).data(), ['a', 'b']);
+    });
+
+    it('Добавить данные', function(done) {
         new Join([
             { file: files.a },
             { file: files.b }
@@ -64,7 +80,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Добавление списка файлов', function(done) {
+    it('Добавить список файлов', function(done) {
         new Join([{ file: files.a }]).addFiles([
                 files.b,
                 files.c
@@ -76,7 +92,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Соединение с закешированным файлом', function(done) {
+    it('Соединить с закешированным файлом', function(done) {
         new Join([
             { file: files.a },
             { file: files.b, content: 'cache b;\n' }

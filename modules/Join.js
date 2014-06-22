@@ -25,6 +25,21 @@ function Join(data) {
 Join.prototype = {
 
     /**
+     * Установить/получить данные.
+     *
+     * @param {array} [data] Данные
+     * @returns {Join|array}
+     */
+    data: function(data) {
+        if(data) {
+            this._data = data;
+            return this;
+        }
+
+        return this._data;
+    },
+
+    /**
      * Добавить данные к объединению.
      *
      * @param {array} data Данные
