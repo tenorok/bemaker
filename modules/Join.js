@@ -154,7 +154,7 @@ Join.prototype = {
      *
      * @callback Join~beforeAfterEachFileCallback
      * @param {number} index Индекс файла
-     * @param {string} path Абсолютный путь до файла
+     * @param {string} file Путь до файла
      */
 
     /**
@@ -255,7 +255,7 @@ Join.prototype = {
 /**
  * Получить содержимое файла.
  *
- * @param {string} file Абсолютный путь до файла
+ * @param {string} file Путь до файла
  * @returns {Promise}
  */
 Join.readFile = function(file) {
@@ -271,6 +271,19 @@ Join.readFile = function(file) {
             resolve(data);
         });
     });
+};
+
+/**
+ * Получить содержимое списка файлов.
+ *
+ * @param {string[]} files Список путей до файлов
+ * @returns {Promise}
+ */
+Join.readFiles = function(files) {
+    return Promise.all(files.reduce(function(content, file) {
+        content.push(this.readFile(file));
+        return content;
+    }.bind(this), []));
 };
 
 /**

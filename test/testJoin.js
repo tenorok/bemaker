@@ -48,6 +48,15 @@ describe('Модуль Join.', function() {
             });
     });
 
+    it('Получить содержимое списка файлов', function(done) {
+        Join.readFiles([files.a, files.b, files.c]).then(function(content) {
+            assert.deepEqual(content, ['var a;\n', 'var b;\n', 'var c;\n']);
+            done();
+        }).catch(function(err) {
+                done(err);
+            });
+    });
+
     it('Соединить файл и строку', function(done) {
         new Join([
             { file: files.a },
