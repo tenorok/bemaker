@@ -274,14 +274,31 @@ Join.readFile = function(file) {
 };
 
 /**
+ * Колбек вызывается для каждого открытого файла в методе readFiles.
+ *
+ * @callback Join~readFilesCallback
+ * @param {String} file Путь до файла
+ * @param {String} data Содержимое файла
+ */
+
+/**
  * Получить содержимое списка файлов.
  *
  * @param {string[]} files Список путей до файлов
+ * @param {Join~readFilesCallback} [callback] Колбек вызывается для каждого файла
  * @returns {Promise}
  */
-Join.readFiles = function(files) {
+Join.readFiles = function(files, callback) {
     return Promise.all(files.reduce(function(content, file) {
-        content.push(this.readFile(file));
+        var filePromise = this.readFile(file);
+        content.push(filePromise);
+
+        filePromise.then(function(data) {
+            if(callback) {
+                callback.call(this, file, data);
+            }
+        }.bind(this));
+
         return content;
     }.bind(this), []));
 };

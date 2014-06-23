@@ -57,6 +57,19 @@ describe('Модуль Join.', function() {
             });
     });
 
+    it('Проверить вызов колбека при получении содержимого списка файлов', function(done) {
+        Join.readFiles([files.c, files.a], function(file, data) {
+            if(file === files.c) {
+                assert.equal(data, 'var c;\n');
+            } else if(file === files.a) {
+                assert.equal(data, 'var a;\n');
+                done();
+            } else {
+                done(new Error('Wrong file path.'));
+            }
+        });
+    });
+
     it('Соединить файл и строку', function(done) {
         new Join([
             { file: files.a },
