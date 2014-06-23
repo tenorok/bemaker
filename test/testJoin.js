@@ -1,4 +1,5 @@
-const assert = require('chai').assert,
+const fs = require('fs'),
+    assert = require('chai').assert,
     path = require('path'),
     Join = require('../modules/Join'),
 
@@ -22,6 +23,25 @@ describe('Модуль Join.', function() {
     it('Получить содержимое одного файла', function(done) {
         Join.readFile(files.a).then(function(content) {
             assert.equal(content, 'var a;\n');
+            done();
+        }).catch(function(err) {
+                done(err);
+            });
+    });
+
+    it('Проверить кеширование содержимого файлов', function(done) {
+        var file = 'test/fixtures/tmp/cache.js';
+        fs.writeFileSync(file, 'cached content');
+
+        Join.readFile(file).then(function(content) {
+            assert.equal(content, 'cached content');
+            fs.writeFileSync(file, 'other content');
+        }).catch(function(err) {
+                done(err);
+            });
+
+        Join.readFile(file).then(function(content) {
+            assert.equal(content, 'cached content');
             done();
         }).catch(function(err) {
                 done(err);
@@ -92,7 +112,7 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Соединить с закешированным файлом', function(done) {
+    it('Соединить с заданным содержимым файла', function(done) {
         new Join([
             { file: files.a },
             { file: files.b, content: 'cache b;\n' }

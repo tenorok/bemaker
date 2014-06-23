@@ -7,7 +7,7 @@ const fs = require('fs'),
  * @constructor
  * @param {*[]} data Данные могут быть следующего формата:
  *      - {string} string Обычная строка
- *      - {object} file Объект с описанием файла
+ *      - {{}} file Объект с описанием файла
  *          - {string} file.file Имя файла
  *          - {string} [file.content] Содержимое файла, если файл не нужно читать
  */
@@ -260,11 +260,25 @@ Join.prototype = {
  */
 Join.readFile = function(file) {
     return new Promise(function(resolve, reject) {
+
+        if(Join._cacheFiles[file]) {
+            return resolve(Join._cacheFiles[file]);
+        }
+
         fs.readFile(file, 'utf-8', function(err, data) {
-            if(err) reject(err);
+            if(err) return reject(err);
+            Join._cacheFiles[file] = data = data || '';
             resolve(data);
         });
     });
 };
+
+/**
+ * Закешированные файлы.
+ *
+ * @private
+ * @type {{}}
+ */
+Join._cacheFiles = {};
 
 module.exports = Join;
