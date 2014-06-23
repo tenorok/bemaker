@@ -38,6 +38,14 @@ function Join(data) {
     this._beforeEach = '';
 
     /**
+     * Строка предваряющая каждый файл.
+     *
+     * @private
+     * @type {string}
+     */
+    this._beforeEachFile = '';
+
+    /**
      * Строка завершающая объединённое содержимое.
      *
      * @private
@@ -134,6 +142,26 @@ Join.prototype = {
 
     /**
      * Колбек вызывается перед установкой
+     * предваряющей строки для каждого файла.
+     *
+     * @callback Join~beforeEachFileCallback
+     * @param {number} index Индекс файла
+     * @param {string} path Абсолютный путь до файла
+     */
+
+    /**
+     * Установить строку предваряющую каждый файл.
+     *
+     * @param {string|Join~beforeEachFileCallback} beforeEachFile Строка
+     * @returns {Join}
+     */
+    beforeEachFile: function(beforeEachFile) {
+        this._beforeEachFile = beforeEachFile;
+        return this;
+    },
+
+    /**
+     * Колбек вызывается перед установкой
      * последней строки.
      *
      * @callback Join~afterCallback
@@ -178,8 +206,9 @@ Join.prototype = {
         return new Promise(function(resolve) {
 
             var content = [
-                this._getAdditionalString(this._before)
-            ];
+                    this._getAdditionalString(this._before)
+                ],
+                indexFile = 0;
 
             Promise.all(this._data.reduce(function(content, part, index) {
 
@@ -188,6 +217,7 @@ Join.prototype = {
                 if(typeof part === 'string') {
                     content.push(part);
                 } else {
+                    content.push(this._getAdditionalString(this._beforeEachFile, [indexFile++, part.file]));
                     content.push(part.content || Join.readFile(part.file));
                 }
 

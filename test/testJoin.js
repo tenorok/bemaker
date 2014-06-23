@@ -155,6 +155,38 @@ describe('Модуль Join.', function() {
 
         });
 
+        describe('beforeEachFile', function() {
+
+            it('Строкой', function(done) {
+                new Join([
+                    { file: files.a },
+                    'c',
+                    { file: files.b }
+                ]).beforeEachFile(',').toString().then(function(content) {
+                    assert.equal(content, ',var a;\nc,var b;\n');
+                    done();
+                }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+            it('Функцией', function(done) {
+                new Join([
+                    { file: files.a },
+                    'c',
+                    { file: files.b }
+                ]).beforeEachFile(function(i, file) {
+                        return i + ':' + file + ')';
+                    }).toString().then(function(content) {
+                        assert.equal(content, '0:' + files.a + ')var a;\nc1:' + files.b + ')var b;\n');
+                        done();
+                    }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+        });
+
     });
 
     describe('after*.', function() {
