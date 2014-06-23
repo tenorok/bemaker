@@ -60,6 +60,14 @@ function Join(data) {
      * @type {string}
      */
     this._afterEach = '';
+
+    /**
+     * Строка последующая за каждым файлом.
+     *
+     * @private
+     * @type {string}
+     */
+    this._afterEachFile = '';
 }
 
 Join.prototype = {
@@ -105,15 +113,15 @@ Join.prototype = {
 
     /**
      * Колбек вызывается перед установкой
-     * первой строки.
+     * первой и последней строки.
      *
-     * @callback Join~beforeCallback
+     * @callback Join~beforeAfterCallback
      */
 
     /**
      * Установить первую строку.
      *
-     * @param {string|Join~beforeCallback} before Строка
+     * @param {string|Join~beforeAfterCallback} before Строка
      * @returns {Join}
      */
     before: function(before) {
@@ -123,16 +131,16 @@ Join.prototype = {
 
     /**
      * Колбек вызывается перед установкой
-     * предваряющей строки для каждого элемента.
+     * предваряющей и последующей строки для каждого элемента.
      *
-     * @callback Join~beforeEachCallback
+     * @callback Join~beforeAfterEachCallback
      * @param {number} index Индекс элемента
      */
 
     /**
      * Установить строку предваряющую каждый элемент.
      *
-     * @param {string|Join~beforeEachCallback} beforeEach Строка
+     * @param {string|Join~beforeAfterEachCallback} beforeEach Строка
      * @returns {Join}
      */
     beforeEach: function(beforeEach) {
@@ -142,9 +150,9 @@ Join.prototype = {
 
     /**
      * Колбек вызывается перед установкой
-     * предваряющей строки для каждого файла.
+     * предваряющей и последующей строки для каждого файла.
      *
-     * @callback Join~beforeEachFileCallback
+     * @callback Join~beforeAfterEachFileCallback
      * @param {number} index Индекс файла
      * @param {string} path Абсолютный путь до файла
      */
@@ -152,7 +160,7 @@ Join.prototype = {
     /**
      * Установить строку предваряющую каждый файл.
      *
-     * @param {string|Join~beforeEachFileCallback} beforeEachFile Строка
+     * @param {string|Join~beforeAfterEachFileCallback} beforeEachFile Строка
      * @returns {Join}
      */
     beforeEachFile: function(beforeEachFile) {
@@ -161,16 +169,9 @@ Join.prototype = {
     },
 
     /**
-     * Колбек вызывается перед установкой
-     * последней строки.
-     *
-     * @callback Join~afterCallback
-     */
-
-    /**
      * Установить последнюю строку.
      *
-     * @param {string|Join~afterCallback} after Строка
+     * @param {string|Join~beforeAfterCallback} after Строка
      * @returns {Join}
      */
     after: function(after) {
@@ -179,21 +180,24 @@ Join.prototype = {
     },
 
     /**
-     * Колбек вызывается перед установкой
-     * последующей строки для каждого элемента.
-     *
-     * @callback Join~afterEachCallback
-     * @param {number} index Индекс элемента
-     */
-
-    /**
      * Установить строку последующую за каждым элементом.
      *
-     * @param {string|Join~afterEachCallback} afterEach Строка
+     * @param {string|Join~beforeAfterEachCallback} afterEach Строка
      * @returns {Join}
      */
     afterEach: function(afterEach) {
         this._afterEach = afterEach;
+        return this;
+    },
+
+    /**
+     * Установить строку последующую за каждым файлом.
+     *
+     * @param {string|Join~beforeAfterEachFileCallback} afterEachFile Строка
+     * @returns {Join}
+     */
+    afterEachFile: function(afterEachFile) {
+        this._afterEachFile = afterEachFile;
         return this;
     },
 
@@ -217,8 +221,11 @@ Join.prototype = {
                 if(typeof part === 'string') {
                     content.push(part);
                 } else {
-                    content.push(this._getAdditionalString(this._beforeEachFile, [indexFile++, part.file]));
-                    content.push(part.content || Join.readFile(part.file));
+                    content.push(
+                        this._getAdditionalString(this._beforeEachFile, [indexFile, part.file]),
+                        part.content || Join.readFile(part.file),
+                        this._getAdditionalString(this._afterEachFile, [indexFile++, part.file])
+                    );
                 }
 
                 content.push(this._getAdditionalString(this._afterEach, [index]));

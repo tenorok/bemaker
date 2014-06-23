@@ -231,6 +231,38 @@ describe('Модуль Join.', function() {
 
         });
 
+        describe('afterEachFile', function() {
+
+            it('Строкой', function(done) {
+                new Join([
+                    { file: files.a },
+                    'c',
+                    { file: files.b }
+                ]).afterEachFile(',').toString().then(function(content) {
+                        assert.equal(content, 'var a;\n,cvar b;\n,');
+                        done();
+                    }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+            it('Функцией', function(done) {
+                new Join([
+                    { file: files.a },
+                    'c',
+                    { file: files.b }
+                ]).afterEachFile(function(i, file) {
+                        return '(' + i + ':' + file;
+                    }).toString().then(function(content) {
+                        assert.equal(content, 'var a;\n(0:' + files.a + 'cvar b;\n(1:' + files.b);
+                        done();
+                    }).catch(function(err) {
+                        done(err);
+                    });
+            });
+
+        });
+
     });
 
 });
