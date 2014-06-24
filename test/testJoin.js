@@ -20,56 +20,6 @@ describe('Модуль Join.', function() {
             });
     });
 
-    it('Получить содержимое одного файла', function(done) {
-        Join.readFile(files.a).then(function(content) {
-            assert.equal(content, 'var a;\n');
-            done();
-        }).catch(function(err) {
-                done(err);
-            });
-    });
-
-    it('Проверить кеширование содержимого файлов', function(done) {
-        var file = 'test/fixtures/tmp/cache.js';
-        fs.writeFileSync(file, 'cached content');
-
-        Join.readFile(file).then(function(content) {
-            assert.equal(content, 'cached content');
-            fs.writeFileSync(file, 'other content');
-        }).catch(function(err) {
-                done(err);
-            });
-
-        Join.readFile(file).then(function(content) {
-            assert.equal(content, 'cached content');
-            done();
-        }).catch(function(err) {
-                done(err);
-            });
-    });
-
-    it('Получить содержимое списка файлов', function(done) {
-        Join.readFiles([files.a, files.b, files.c]).then(function(content) {
-            assert.deepEqual(content, ['var a;\n', 'var b;\n', 'var c;\n']);
-            done();
-        }).catch(function(err) {
-                done(err);
-            });
-    });
-
-    it('Проверить вызов колбека при получении содержимого списка файлов', function(done) {
-        Join.readFiles([files.c, files.a], function(file, data) {
-            if(file === files.c) {
-                assert.equal(data, 'var c;\n');
-            } else if(file === files.a) {
-                assert.equal(data, 'var a;\n');
-                done();
-            } else {
-                done(new Error('Wrong file path.'));
-            }
-        });
-    });
-
     it('Соединить файл и строку', function(done) {
         new Join([
             { file: files.a },

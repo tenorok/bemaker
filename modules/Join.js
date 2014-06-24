@@ -1,4 +1,4 @@
-const fs = require('fs'),
+const fs = require('./fs'),
     Promise = require('bluebird');
 
 /**
@@ -223,7 +223,7 @@ Join.prototype = {
                 } else {
                     content.push(
                         this._getAdditionalString(this._beforeEachFile, [indexFile, part.file]),
-                        part.content || Join.readFile(part.file),
+                        part.content || fs.readFile(part.file),
                         this._getAdditionalString(this._afterEachFile, [indexFile++, part.file])
                     );
                 }
@@ -251,64 +251,5 @@ Join.prototype = {
     }
 
 };
-
-/**
- * Получить содержимое файла.
- *
- * @param {string} file Путь до файла
- * @returns {Promise}
- */
-Join.readFile = function(file) {
-    return new Promise(function(resolve, reject) {
-
-        if(Join._cacheFiles[file]) {
-            return resolve(Join._cacheFiles[file]);
-        }
-
-        fs.readFile(file, 'utf-8', function(err, data) {
-            if(err) return reject(err);
-            Join._cacheFiles[file] = data = data || '';
-            resolve(data);
-        });
-    });
-};
-
-/**
- * Колбек вызывается для каждого открытого файла в методе readFiles.
- *
- * @callback Join~readFilesCallback
- * @param {String} file Путь до файла
- * @param {String} data Содержимое файла
- */
-
-/**
- * Получить содержимое списка файлов.
- *
- * @param {string[]} files Список путей до файлов
- * @param {Join~readFilesCallback} [callback] Колбек вызывается для каждого файла
- * @returns {Promise}
- */
-Join.readFiles = function(files, callback) {
-    return Promise.all(files.reduce(function(content, file) {
-        var filePromise = this.readFile(file);
-        content.push(filePromise);
-
-        filePromise.then(function(data) {
-            if(callback) {
-                callback.call(this, file, data);
-            }
-        }.bind(this));
-
-        return content;
-    }.bind(this), []));
-};
-
-/**
- * Закешированные файлы.
- *
- * @private
- * @type {{}}
- */
-Join._cacheFiles = {};
 
 module.exports = Join;
