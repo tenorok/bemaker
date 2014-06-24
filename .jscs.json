@@ -51,8 +51,7 @@
         "<",
         "<="
     ],
-    "disallowLeftStickedOperators": [
-        "?",
+    "requireSpaceBeforeBinaryOperators": [
         "+",
         "-",
         "/",
@@ -67,9 +66,8 @@
         "<",
         "<="
     ],
-    "requireLeftStickedOperators": [","],
-    "disallowRightStickedOperators": [
-        "?",
+    "disallowSpaceBeforeBinaryOperators": [","],
+    "requireSpaceAfterBinaryOperators": [
         "/",
         "*",
         ":",
@@ -83,7 +81,7 @@
         "<",
         "<="
     ],
-    "requireRightStickedOperators": ["!"],
+    "disallowSpaceAfterBinaryOperators": ["!"],
     "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
     "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
     "disallowKeywords": ["with"],
@@ -100,5 +98,11 @@
         "checkParamNames": true,
         "checkRedundantParams": true,
         "requireParamTypes": true
+    },
+    "requireSpacesInConditionalExpression": {
+        "afterTest": true,
+        "beforeConsequent": true,
+        "afterConsequent": true,
+        "beforeAlternate": true
     }
 }
