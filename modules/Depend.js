@@ -25,18 +25,14 @@ function Depend(modules) {
 Depend.prototype = {
 
     /**
-     * Установить/получить модули.
+     * Установить модули.
      *
-     * @param {Depend~Module[]} [modules] Модули
-     * @returns {Depend|Depend~Module[]}
+     * @param {Depend~Module[]} modules Модули
+     * @returns {Depend}
      */
-    modules: function(modules) {
-        if(modules) {
-            this._modules = modules;
-            return this;
-        }
-
-        return this._modules;
+    set: function(modules) {
+        this._modules = modules;
+        return this;
     },
 
     /**
@@ -48,6 +44,19 @@ Depend.prototype = {
     add: function(modules) {
         this._modules = this._modules.concat(modules);
         return this;
+    },
+
+    /**
+     * Получить модули.
+     *
+     * При вызове без аргумента возвращает все имеющиеся модули.
+     * При вызове с заданными именем возвращает один искомый модуль.
+     *
+     * @param {string} [name] Имя модуля
+     * @returns {Depend~Module|Depend~Module[]}
+     */
+    get: function(name) {
+        return this._modules;
     }
 
 };

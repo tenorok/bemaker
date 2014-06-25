@@ -7,17 +7,17 @@ describe('Модуль Depend.', function() {
         assert.deepEqual(new Depend([
             { name: 'a' },
             { name: 'b' }
-        ]).modules(), [
+        ]).get(), [
             { name: 'a' },
             { name: 'b' }
         ]);
     });
 
     it('Задать и получить модули отдельным методом', function() {
-        assert.deepEqual(new Depend().modules([
+        assert.deepEqual(new Depend().set([
             { name: 'a' },
             { name: 'b' }
-        ]).modules(), [
+        ]).get(), [
             { name: 'a' },
             { name: 'b' }
         ]);
@@ -27,7 +27,7 @@ describe('Модуль Depend.', function() {
         assert.deepEqual(new Depend([
             { name: 'a' },
             { name: 'b' }
-        ]).add([{ name: 'c' }]).modules(), [
+        ]).add([{ name: 'c' }]).get(), [
             { name: 'a' },
             { name: 'b' },
             { name: 'c' }
