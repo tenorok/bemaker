@@ -56,7 +56,11 @@ Depend.prototype = {
      * @returns {Depend~Module|Depend~Module[]}
      */
     get: function(name) {
-        return this._modules;
+        if(!name) return this._modules;
+
+        return this._modules.filter(function(module) {
+            return module.name === name;
+        })[0];
     }
 
 };

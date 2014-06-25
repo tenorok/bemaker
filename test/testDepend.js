@@ -34,4 +34,12 @@ describe('Модуль Depend.', function() {
         ]);
     });
 
+    it('Получить заданный модуль', function() {
+        assert.deepEqual(new Depend([
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]).get('b'), { name: 'b' });
+    });
+
 });
