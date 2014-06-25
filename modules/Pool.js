@@ -58,6 +58,20 @@ Pool.prototype = {
     },
 
     /**
+     * Добавить модуль или несколько модулей перед модулем с заданными именем.
+     *
+     * @param {Pool~Module|Pool~Module[]} modules Модули
+     * @param {string} name Имя модуля
+     * @returns {Pool}
+     */
+    before: function(modules, name) {
+        Array.isArray(modules)
+            ? this._modules.splice.apply(this._modules, [this.indexOf(name), 0].concat(modules))
+            : this._modules.splice(this.indexOf(name), 0, modules);
+        return this;
+    },
+
+    /**
      * Переместить модуль с заданными именем на указанную позицию.
      *
      * @param {string} name Имя модуля

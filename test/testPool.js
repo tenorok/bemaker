@@ -99,6 +99,35 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод before.', function() {
+
+        it('Добавить один модуль перед заданным модулем', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).before({ name: 'b' }, 'c').get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Добавить несколько модулей перед заданным модулем', function() {
+            assert.deepEqual(new Pool([
+                { name: 'c' },
+                { name: 'd' }
+            ]).before([{ name: 'a' }, { name: 'b' }], 'c').get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Метод move.', function() {
 
         it('Переместить несколько модулей', function() {
