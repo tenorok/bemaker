@@ -157,6 +157,35 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод add.', function() {
+
+        it('Добавить один модуль на заданный индекс', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).add({ name: 'b' }, 1).get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Добавить несколько модулей на заданный индекс', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' }
+            ]).add([{ name: 'c' }, { name: 'd' }], 2).get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Метод move.', function() {
 
         it('Переместить несколько модулей', function() {

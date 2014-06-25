@@ -65,9 +65,7 @@ Pool.prototype = {
      * @returns {Pool}
      */
     before: function(modules, name) {
-        Array.isArray(modules)
-            ? this._modules.splice.apply(this._modules, [this.indexOf(name), 0].concat(modules))
-            : this._modules.splice(this.indexOf(name), 0, modules);
+        this.add(modules, this.indexOf(name));
         return this;
     },
 
@@ -79,9 +77,21 @@ Pool.prototype = {
      * @returns {Pool}
      */
     after: function(modules, name) {
+        this.add(modules, this.indexOf(name) + 1);
+        return this;
+    },
+
+    /**
+     * Добавить модуль или несколько модулей на заданный индекс.
+     *
+     * @param {Pool~Module|Pool~Module[]} modules Модули
+     * @param {number} index Индекс
+     * @returns {Pool}
+     */
+    add: function(modules, index) {
         Array.isArray(modules)
-            ? this._modules.splice.apply(this._modules, [this.indexOf(name) + 1, 0].concat(modules))
-            : this._modules.splice(this.indexOf(name) + 1, 0, modules);
+            ? this._modules.splice.apply(this._modules, [index, 0].concat(modules))
+            : this._modules.splice(index, 0, modules);
         return this;
     },
 
