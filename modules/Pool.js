@@ -36,12 +36,12 @@ Pool.prototype = {
     },
 
     /**
-     * Добавить модули.
+     * Добавить модуль или несколько модулей в конец списка.
      *
-     * @param {Pool~Module[]} modules Модули
+     * @param {Pool~Module|Pool~Module[]} modules Модули
      * @returns {Pool}
      */
-    add: function(modules) {
+    push: function(modules) {
         this.set(this._modules.concat(modules));
         return this;
     },

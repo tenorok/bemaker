@@ -23,14 +23,29 @@ describe('Модуль Pool.', function() {
         ]);
     });
 
-    it('Добавить модули', function() {
+    it('Добавить один модуль в конец', function() {
         assert.deepEqual(new Pool([
             { name: 'a' },
             { name: 'b' }
-        ]).add([{ name: 'c' }]).get(), [
+        ]).push({ name: 'c' }).get(), [
             { name: 'a' },
             { name: 'b' },
             { name: 'c' }
+        ]);
+    });
+
+    it('Добавить несколько модулей в конец', function() {
+        assert.deepEqual(new Pool([
+            { name: 'a' },
+            { name: 'b' }
+        ]).push([
+            { name: 'c' },
+            { name: 'd' }
+        ]).get(), [
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' },
+            { name: 'd' }
         ]);
     });
 
@@ -78,13 +93,13 @@ describe('Модуль Pool.', function() {
         }, Error, 'A duplicate module a');
     });
 
-    it('Получить ошибку о дублировании модулей при использовании метода add', function() {
+    it('Получить ошибку о дублировании модулей при использовании метода push', function() {
         assert.throws(function() {
-            new Pool([{ name: 'a' }]).add([{ name: 'a' }]);
+            new Pool([{ name: 'a' }]).push({ name: 'a' });
         }, Error, 'A duplicate module a');
 
         assert.throws(function() {
-            new Pool().add([
+            new Pool().push([
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'b' }
