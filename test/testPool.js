@@ -1,10 +1,10 @@
 const assert = require('chai').assert,
-    Depend = require('../modules/Depend');
+    Pool = require('../modules/Pool');
 
-describe('Модуль Depend.', function() {
+describe('Модуль Pool.', function() {
 
     it('Получить модули заданные в конструкторе', function() {
-        assert.deepEqual(new Depend([
+        assert.deepEqual(new Pool([
             { name: 'a' },
             { name: 'b' }
         ]).get(), [
@@ -14,7 +14,7 @@ describe('Модуль Depend.', function() {
     });
 
     it('Задать и получить модули методом set', function() {
-        assert.deepEqual(new Depend().set([
+        assert.deepEqual(new Pool().set([
             { name: 'a' },
             { name: 'b' }
         ]).get(), [
@@ -24,7 +24,7 @@ describe('Модуль Depend.', function() {
     });
 
     it('Добавить модули', function() {
-        assert.deepEqual(new Depend([
+        assert.deepEqual(new Pool([
             { name: 'a' },
             { name: 'b' }
         ]).add([{ name: 'c' }]).get(), [
@@ -35,7 +35,7 @@ describe('Модуль Depend.', function() {
     });
 
     it('Получить заданный модуль', function() {
-        assert.deepEqual(new Depend([
+        assert.deepEqual(new Pool([
             { name: 'a' },
             { name: 'b' },
             { name: 'c' }
@@ -43,7 +43,7 @@ describe('Модуль Depend.', function() {
     });
 
     it('Получить индекс модуля', function() {
-        assert.equal(new Depend([
+        assert.equal(new Pool([
             { name: 'a' },
             { name: 'b' },
             { name: 'c' }
@@ -51,7 +51,7 @@ describe('Модуль Depend.', function() {
     });
 
     it('Получить индекс модуля из указанного списка модулей', function() {
-        assert.equal(new Depend().indexOf('c', [
+        assert.equal(new Pool().indexOf('c', [
             { name: 'a' },
             { name: 'b' },
             { name: 'c' }
@@ -60,7 +60,7 @@ describe('Модуль Depend.', function() {
 
     it('Получить ошибку о дублировании модулей', function() {
         assert.throws(function() {
-            new Depend([
+            new Pool([
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'b' }
@@ -70,7 +70,7 @@ describe('Модуль Depend.', function() {
 
     it('Получить ошибку о дублировании модулей при использовании метода set', function() {
         assert.throws(function() {
-            new Depend().set([
+            new Pool().set([
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'a' }
@@ -80,11 +80,11 @@ describe('Модуль Depend.', function() {
 
     it('Получить ошибку о дублировании модулей при использовании метода add', function() {
         assert.throws(function() {
-            new Depend([{ name: 'a' }]).add([{ name: 'a' }]);
+            new Pool([{ name: 'a' }]).add([{ name: 'a' }]);
         }, Error, 'A duplicate module a');
 
         assert.throws(function() {
-            new Depend().add([
+            new Pool().add([
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'b' }

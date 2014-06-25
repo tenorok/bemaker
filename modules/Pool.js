@@ -1,34 +1,34 @@
 /**
  * Модуль.
  *
- * @typedef {{}} Depend~Module
+ * @typedef {{}} Pool~Module
  * @property {name} Имя модуля
  */
 
 /**
- * Модуль для работы с зависимостями модулей.
+ * Модуль для хранения модулей.
  *
  * @constructor
- * @param {Depend~Module[]} [modules] Модули
+ * @param {Pool~Module[]} [modules] Модули
  */
-function Depend(modules) {
+function Pool(modules) {
 
     /**
      * Модули.
      *
-     * @type {Depend~Module[]}
+     * @type {Pool~Module[]}
      * @private
      */
     this._modules = this._checkDuplicates(modules || []);
 }
 
-Depend.prototype = {
+Pool.prototype = {
 
     /**
      * Установить модули.
      *
-     * @param {Depend~Module[]} modules Модули
-     * @returns {Depend}
+     * @param {Pool~Module[]} modules Модули
+     * @returns {Pool}
      */
     set: function(modules) {
         this._modules = this._checkDuplicates(modules);
@@ -36,10 +36,10 @@ Depend.prototype = {
     },
 
     /**
-     * Добавить модули к объединению.
+     * Добавить модули.
      *
-     * @param {Depend~Module[]} modules Модули
-     * @returns {Depend}
+     * @param {Pool~Module[]} modules Модули
+     * @returns {Pool}
      */
     add: function(modules) {
         this.set(this._modules.concat(modules));
@@ -53,7 +53,7 @@ Depend.prototype = {
      * При вызове с заданными именем возвращает один искомый модуль.
      *
      * @param {string} [name] Имя модуля
-     * @returns {Depend~Module|Depend~Module[]}
+     * @returns {Pool~Module|Pool~Module[]}
      */
     get: function(name) {
         if(!name) return this._modules;
@@ -67,7 +67,7 @@ Depend.prototype = {
      * Получить индекс первого найденного модуля по его имени.
      *
      * @param {string} name Имя модуля
-     * @param {Depend~Module[]} [modules] Модули среди которых осуществлять поиск
+     * @param {Pool~Module[]} [modules] Модули среди которых осуществлять поиск
      * @returns {number} Индекс модуля или `-1`, если модуль не найден
      */
     indexOf: function(name, modules) {
@@ -86,9 +86,9 @@ Depend.prototype = {
      * Проверить модули на дубликаты.
      *
      * @private
-     * @param {Depend~Module[]} [modules] Модули
+     * @param {Pool~Module[]} [modules] Модули
      * @throws {Error} Обнаружен дубликат модуля
-     * @returns {Depend~Module[]}
+     * @returns {Pool~Module[]}
      */
     _checkDuplicates: function(modules) {
         modules.forEach(function(module) {
@@ -104,4 +104,4 @@ Depend.prototype = {
 
 };
 
-module.exports = Depend;
+module.exports = Pool;
