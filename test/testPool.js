@@ -128,6 +128,35 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод after.', function() {
+
+        it('Добавить один модуль после заданного модуля', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).after({ name: 'b' }, 'a').get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Добавить несколько модулей после заданного модуля', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' }
+            ]).after([{ name: 'c' }, { name: 'd' }], 'b').get(), [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Метод move.', function() {
 
         it('Переместить несколько модулей', function() {
