@@ -9,16 +9,17 @@
  * Модуль для работы с зависимостями модулей.
  *
  * @constructor
- * @param {Depend~Module[]} modules Модули
+ * @param {Depend~Module[]} [modules] Модули
  */
 function Depend(modules) {
 
     /**
+     * Модули.
      *
      * @type {Depend~Module[]}
      * @private
      */
-    this._modules = modules;
+    this._modules = modules || [];
 }
 
 Depend.prototype = {
