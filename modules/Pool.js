@@ -92,6 +92,7 @@ Pool.prototype = {
         Array.isArray(modules)
             ? this._modules.splice.apply(this._modules, [index, 0].concat(modules))
             : this._modules.splice(index, 0, modules);
+        this._checkDuplicates();
         return this;
     },
 
@@ -152,6 +153,7 @@ Pool.prototype = {
      * @returns {Pool~Module[]}
      */
     _checkDuplicates: function(modules) {
+        modules = modules || this._modules;
         modules.forEach(function(module) {
             var name = module.name;
             if(modules.filter(function(module) {

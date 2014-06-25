@@ -260,6 +260,15 @@ describe('Модуль Pool.', function() {
             }, Error, 'A duplicate module b');
         });
 
+        it('Получить ошибку о дублировании модулей при использовании метода add', function() {
+            assert.throws(function() {
+                new Pool([{ name: 'a' }]).add([
+                    { name: 'b' },
+                    { name: 'a' }
+                ], 1);
+            }, Error, 'A duplicate module a');
+        });
+
     });
 
 });
