@@ -47,6 +47,17 @@ Pool.prototype = {
     },
 
     /**
+     * Добавить модуль или несколько модулей в начало списка.
+     *
+     * @param {Pool~Module|Pool~Module[]} modules Модули
+     * @returns {Pool}
+     */
+    unshift: function(modules) {
+        this.set((Array.isArray(modules) ? modules : [modules]).concat(this._modules));
+        return this;
+    },
+
+    /**
      * Получить модули.
      *
      * При вызове без аргумента возвращает все имеющиеся модули.

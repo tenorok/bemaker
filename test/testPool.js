@@ -49,6 +49,32 @@ describe('Модуль Pool.', function() {
         ]);
     });
 
+    it('Добавить один модуль в начало', function() {
+        assert.deepEqual(new Pool([
+            { name: 'b' },
+            { name: 'c' }
+        ]).unshift({ name: 'a' }).get(), [
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]);
+    });
+
+    it('Добавить несколько модулей в начало', function() {
+        assert.deepEqual(new Pool([
+            { name: 'c' },
+            { name: 'd' }
+        ]).unshift([
+            { name: 'a' },
+            { name: 'b' }
+        ]).get(), [
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' },
+            { name: 'd' }
+        ]);
+    });
+
     it('Получить заданный модуль', function() {
         assert.deepEqual(new Pool([
             { name: 'a' },
