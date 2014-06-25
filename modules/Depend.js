@@ -19,7 +19,7 @@ function Depend(modules) {
      * @type {Depend~Module[]}
      * @private
      */
-    this._modules = modules || [];
+    this._modules = this._checkDuplicates(modules || []);
 }
 
 Depend.prototype = {
@@ -31,7 +31,7 @@ Depend.prototype = {
      * @returns {Depend}
      */
     set: function(modules) {
-        this._modules = modules;
+        this._modules = this._checkDuplicates(modules);
         return this;
     },
 
@@ -42,7 +42,7 @@ Depend.prototype = {
      * @returns {Depend}
      */
     add: function(modules) {
-        this._modules = this._modules.concat(modules);
+        this.set(this._modules.concat(modules));
         return this;
     },
 
@@ -64,7 +64,7 @@ Depend.prototype = {
     },
 
     /**
-     * Получить индекс модуля по его имени.
+     * Получить индекс первого найденного модуля по его имени.
      *
      * @param {string} name Имя модуля
      * @param {Depend~Module[]} [modules] Модули среди которых осуществлять поиск
@@ -80,6 +80,26 @@ Depend.prototype = {
         }
 
         return -1;
+    },
+
+    /**
+     * Проверить модули на дубликаты.
+     *
+     * @private
+     * @param {Depend~Module[]} [modules] Модули
+     * @throws {Error} Обнаружен дубликат модуля
+     * @returns {Depend~Module[]}
+     */
+    _checkDuplicates: function(modules) {
+        modules.forEach(function(module) {
+            var name = module.name;
+            if(modules.filter(function(module) {
+                return module.name === name;
+            }).length > 1) {
+                throw new Error('A duplicate module ' + name);
+            }
+        });
+        return modules;
     }
 
 };
