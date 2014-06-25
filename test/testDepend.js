@@ -42,4 +42,20 @@ describe('Модуль Depend.', function() {
         ]).get('b'), { name: 'b' });
     });
 
+    it('Получить индекс модуля', function() {
+        assert.equal(new Depend([
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]).indexOf('b'), 1);
+    });
+
+    it('Получить индекс модуля из указанного списка модулей', function() {
+        assert.equal(new Depend().indexOf('c', [
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' }
+        ]), 2);
+    });
+
 });

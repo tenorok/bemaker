@@ -61,6 +61,25 @@ Depend.prototype = {
         return this._modules.filter(function(module) {
             return module.name === name;
         })[0];
+    },
+
+    /**
+     * Получить индекс модуля по его имени.
+     *
+     * @param {string} name Имя модуля
+     * @param {Depend~Module[]} [modules] Модули среди которых осуществлять поиск
+     * @returns {number} Индекс модуля или `-1`, если модуль не найден
+     */
+    indexOf: function(name, modules) {
+        modules = modules || this._modules;
+
+        for(var index = 0; index < modules.length; index++) {
+            if(modules[index].name === name) {
+                return index;
+            }
+        }
+
+        return -1;
     }
 
 };
