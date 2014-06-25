@@ -147,12 +147,22 @@ Pool.prototype = {
     /**
      * Проверить существование модуля с заданным именем.
      *
-     * @param {string} name Имя модуля
+     * @param {string|Pool~Module|Pool~Module[]} desire Имя модуля, модуль или список модулей
      * @param {Pool~Module[]} [modules] Модули среди которых осуществлять поиск
      * @returns {boolean}
      */
-    exists: function(name, modules) {
-        return !!~this.indexOf(name, modules);
+    exists: function(desire, modules) {
+        if(typeof desire === 'string') {
+            return !!~this.indexOf(desire, modules);
+        }
+
+        if(Array.isArray(desire)) {
+            return desire.every(function(module) {
+                return this.exists(module.name, modules);
+            }, this);
+        }
+
+        return !!~this.indexOf(desire.name, modules);
     },
 
     /**

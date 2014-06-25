@@ -226,7 +226,7 @@ describe('Модуль Pool.', function() {
 
     describe('Метод exists.', function() {
 
-        it('Проверить модуль на существование', function() {
+        it('Проверить существование модуля с заданным именем', function() {
             assert.isTrue(new Pool([
                 { name: 'a' },
                 { name: 'b' },
@@ -240,12 +240,40 @@ describe('Модуль Pool.', function() {
             ]).exists('d'));
         });
 
-        it('Проверить модуль на существование из указанного списка модулей', function() {
+        it('Проверить существование модуля с заданным именем из указанного списка модулей', function() {
             assert.isTrue(new Pool().exists('b', [
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'c' }
             ]));
+        });
+
+        it('Проверить существование модуля', function() {
+            assert.isTrue(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists({ name: 'c' }));
+
+            assert.isFalse(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists({ name: 'd' }));
+        });
+
+        it('Проверить существование списка модулей', function() {
+            assert.isTrue(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists([{ name: 'c' }, { name: 'b' }]));
+
+            assert.isFalse(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists([{ name: 'c' }, { name: 'd' }]));
         });
 
     });
