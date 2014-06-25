@@ -126,6 +126,15 @@ Pool.prototype = {
     },
 
     /**
+     * Получить количество модулей.
+     *
+     * @returns {number}
+     */
+    size: function() {
+        return this._modules.length;
+    },
+
+    /**
      * Получить индекс первого найденного модуля по его имени.
      *
      * @param {string} name Имя модуля

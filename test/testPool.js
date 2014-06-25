@@ -39,6 +39,18 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод size.', function() {
+
+        it('Получить количество модулей', function() {
+            assert.equal(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).size(), 3);
+        });
+
+    });
+
     describe('Метод push.', function() {
 
         it('Добавить один модуль в конец', function() {
@@ -57,9 +69,9 @@ describe('Модуль Pool.', function() {
                 { name: 'a' },
                 { name: 'b' }
             ]).push([
-                    { name: 'c' },
-                    { name: 'd' }
-                ]).get(), [
+                { name: 'c' },
+                { name: 'd' }
+            ]).get(), [
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'c' },
@@ -87,9 +99,9 @@ describe('Модуль Pool.', function() {
                 { name: 'c' },
                 { name: 'd' }
             ]).unshift([
-                    { name: 'a' },
-                    { name: 'b' }
-                ]).get(), [
+                { name: 'a' },
+                { name: 'b' }
+            ]).get(), [
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'c' },
