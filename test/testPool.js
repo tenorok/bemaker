@@ -99,6 +99,24 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод move.', function() {
+
+        it('Переместить несколько модулей', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).move('a', 3).move('d', 1).get(), [
+                { name: 'b' },
+                { name: 'd' },
+                { name: 'c' },
+                { name: 'a' }
+            ]);
+        });
+
+    });
+
     describe('Метод indexOf.', function() {
 
         it('Получить индекс модуля', function() {

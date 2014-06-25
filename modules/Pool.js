@@ -58,6 +58,18 @@ Pool.prototype = {
     },
 
     /**
+     * Переместить модуль с заданными именем на указанную позицию.
+     *
+     * @param {string} name Имя модуля
+     * @param {number} index Позиция
+     * @returns {Pool}
+     */
+    move: function(name, index) {
+        this._modules.splice(index, 0, this._modules.splice(this.indexOf(name), 1)[0]);
+        return this;
+    },
+
+    /**
      * Получить модули.
      *
      * При вызове без аргумента возвращает все имеющиеся модули.
