@@ -145,6 +145,17 @@ Pool.prototype = {
     },
 
     /**
+     * Проверить существование модуля с заданным именем.
+     *
+     * @param {string} name Имя модуля
+     * @param {Pool~Module[]} [modules] Модули среди которых осуществлять поиск
+     * @returns {boolean}
+     */
+    exists: function(name, modules) {
+        return !!~this.indexOf(name, modules);
+    },
+
+    /**
      * Проверить модули на дубликаты.
      *
      * @private

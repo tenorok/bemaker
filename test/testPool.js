@@ -224,6 +224,32 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод exists.', function() {
+
+        it('Проверить модуль на существование', function() {
+            assert.isTrue(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists('b'));
+
+            assert.isFalse(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).exists('d'));
+        });
+
+        it('Проверить модуль на существование из указанного списка модулей', function() {
+            assert.isTrue(new Pool().exists('b', [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]));
+        });
+
+    });
+
     describe('Проверка на дублирование модулей.', function() {
 
         it('Получить ошибку о дублировании модулей', function() {
