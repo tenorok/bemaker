@@ -126,6 +126,28 @@ Pool.prototype = {
     },
 
     /**
+     * Удалить модуль или несколько модулей по их именам или индексам.
+     *
+     * @param {string|number|*[]} desire Имя модуля, индекс модули, массив имён и индексов
+     * @returns {Pool}
+     */
+    delete: function(desire) {
+        if(Array.isArray(desire)) {
+            desire
+                .map(function(nameOrIndex) {
+                    return typeof nameOrIndex === 'number' ? this.nameOf(nameOrIndex) : nameOrIndex;
+                }, this)
+                .forEach(function(name) {
+                    this.delete(name);
+                }, this);
+            return this;
+        }
+
+        this._modules.splice(typeof desire === 'string' ? this.indexOf(desire) : desire, 1);
+        return this;
+    },
+
+    /**
      * Получить количество модулей.
      *
      * @returns {number}

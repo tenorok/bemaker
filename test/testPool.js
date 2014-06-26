@@ -39,6 +39,69 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод delete.', function() {
+
+        it('Удалить один модуль по имени', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).delete('b').get(), [
+                { name: 'a' },
+                { name: 'c' }
+            ]);
+        });
+
+        it('Удалить один модуль по индексу', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).delete(0).get(), [
+                { name: 'b' },
+                { name: 'c' }
+            ]);
+        });
+
+        it('Удалить несколько модулей по именам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).delete(['b', 'c']).get(), [
+                { name: 'a' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Удалить несколько модулей по индексам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' }
+            ]).delete([1, 2]).get(), [
+                { name: 'a' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Удалить несколько модулей по именам и индексам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).delete(['b', 2, 'e']).get(), [
+                { name: 'a' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Метод size.', function() {
 
         it('Получить количество модулей', function() {
