@@ -97,6 +97,18 @@ Pool.prototype = {
     },
 
     /**
+     * Заменить модуль с заданным именем на другой модуль или несколько модулей.
+     *
+     * @param {string} name Имя заменяемого модуля
+     * @param {Pool~Module|Pool~Module[]} modules Заменяющие модули
+     * @returns {Pool}
+     */
+    replace: function(name, modules) {
+        var index = this.indexOf(name);
+        return this.delete(index).add(modules, index);
+    },
+
+    /**
      * Переместить модуль с заданными именем на указанную позицию.
      *
      * @param {string} name Имя модуля

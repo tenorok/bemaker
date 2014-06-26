@@ -261,6 +261,35 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод replace.', function() {
+
+        it('Заменить один модуль на другой', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).replace('b', { name: 'd' }).get(), [
+                { name: 'a' },
+                { name: 'd' },
+                { name: 'c' }
+            ]);
+        });
+
+        it('Заменить один модуль на несколько других', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).replace('b', [{ name: 'd' }, { name: 'e' }]).get(), [
+                { name: 'a' },
+                { name: 'd' },
+                { name: 'e' },
+                { name: 'c' }
+            ]);
+        });
+
+    });
+
     describe('Метод move.', function() {
 
         it('Переместить несколько модулей', function() {
