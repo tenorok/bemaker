@@ -154,6 +154,18 @@ Pool.prototype = {
     },
 
     /**
+     * Получить имя модуля по его индексу.
+     *
+     * @param {string} index Индекс модуля
+     * @param {Pool~Module[]} [modules] Модули среди которых осуществлять поиск
+     * @returns {string} Имя модуля или пустая строка, если модуль не найден
+     */
+    nameOf: function(index, modules) {
+        modules = modules || this._modules;
+        return (modules[index] || {}).name || '';
+    },
+
+    /**
      * Проверить существование модуля с заданным именем.
      *
      * @param {string|Pool~Module|Pool~Module[]} desire Имя модуля, модуль или список модулей

@@ -226,12 +226,48 @@ describe('Модуль Pool.', function() {
             ]).indexOf('b'), 1);
         });
 
+        it('Получить индекс несуществующего модуля', function() {
+            assert.equal(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).indexOf('d'), -1);
+        });
+
         it('Получить индекс модуля из указанного списка модулей', function() {
             assert.equal(new Pool().indexOf('c', [
                 { name: 'a' },
                 { name: 'b' },
                 { name: 'c' }
             ]), 2);
+        });
+
+    });
+
+    describe('Метод nameOf.', function() {
+
+        it('Получить имя модуля', function() {
+            assert.equal(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).nameOf(1), 'b');
+        });
+
+        it('Получить имя несуществующего модуля', function() {
+            assert.equal(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).nameOf(3), '');
+        });
+
+        it('Получить индекс модуля из указанного списка модулей', function() {
+            assert.equal(new Pool().nameOf(2, [
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]), 'c');
         });
 
     });
