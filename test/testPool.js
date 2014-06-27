@@ -290,6 +290,46 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод swap.', function() {
+
+        it('Поменять местами модули по имени', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).swap('a', 'c').get(), [
+                { name: 'c' },
+                { name: 'b' },
+                { name: 'a' }
+            ]);
+        });
+
+        it('Поменять местами модули по индексам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).swap(1, 2).get(), [
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'b' }
+            ]);
+        });
+
+        it('Поменять местами модули по имени и индексу', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).swap('a', 2).get(), [
+                { name: 'c' },
+                { name: 'b' },
+                { name: 'a' }
+            ]);
+        });
+
+    });
+
     describe('Метод move.', function() {
 
         it('Переместить несколько модулей', function() {

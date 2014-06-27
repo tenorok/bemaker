@@ -109,6 +109,38 @@ Pool.prototype = {
     },
 
     /**
+     * Поменять модули местами.
+     *
+     * @param {string|number} first Имя или индекс первого модуля
+     * @param {string|number} second Имя или индекс второго модуля
+     * @returns {Pool}
+     */
+    swap: function(first, second) {
+        var firstIndex,
+            firstName,
+            secondIndex,
+            secondName;
+
+        if(typeof first === 'string') {
+            firstIndex = this.indexOf(first);
+            firstName = first;
+        } else {
+            firstIndex = first;
+            firstName = this.nameOf(first);
+        }
+
+        if(typeof second === 'string') {
+            secondIndex = this.indexOf(second);
+            secondName = second;
+        } else {
+            secondIndex = second;
+            secondName = this.nameOf(second);
+        }
+
+        return this.move(firstName, secondIndex).move(secondName, firstIndex);
+    },
+
+    /**
      * Переместить модуль с заданными именем на указанную позицию.
      *
      * @param {string} name Имя модуля
