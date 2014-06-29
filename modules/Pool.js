@@ -2,7 +2,7 @@
  * Модуль.
  *
  * @typedef {{}} Pool~Module
- * @property {name} Имя модуля
+ * @property {string} name Имя модуля
  */
 
 /**
@@ -16,8 +16,8 @@ function Pool(modules) {
     /**
      * Модули.
      *
-     * @type {Pool~Module[]}
      * @private
+     * @type {Pool~Module[]}
      */
     this._modules = this._checkDuplicates(modules || []);
 }
