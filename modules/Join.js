@@ -2,14 +2,20 @@ const fs = require('./fs'),
     Promise = require('bluebird');
 
 /**
+ * Элемент данных.
+ *
+ * Элемент может быть обычной строкой или хеш-картой.
+ *
+ * @typedef {string|{}} Join~DataItem
+ * @property {string} file Имя файла
+ * @property {string} [content] Содержимое файла, если файл не нужно читать
+ */
+
+/**
  * Модуль для объединения строк и содержимого файлов.
  *
  * @constructor
- * @param {*[]} data Данные могут быть следующего формата:
- *      - {string} string Обычная строка
- *      - {{}} file Объект с описанием файла
- *          - {string} file.file Имя файла
- *          - {string} [file.content] Содержимое файла, если файл не нужно читать
+ * @param {Join~DataItem[]} [data] Данные
  */
 function Join(data) {
 
@@ -17,9 +23,9 @@ function Join(data) {
      * Данные.
      *
      * @private
-     * @type {*[]}
+     * @type {Join~DataItem[]}
      */
-    this._data = data;
+    this._data = data || [];
 
     /**
      * Строка предваряющая объединённое содержимое.
@@ -75,8 +81,8 @@ Join.prototype = {
     /**
      * Установить/получить данные.
      *
-     * @param {*[]} [data] Данные
-     * @returns {Join|*[]}
+     * @param {Join~DataItem[]} [data] Данные
+     * @returns {Join|Join~DataItem[]}
      */
     data: function(data) {
         if(data) {
@@ -90,7 +96,7 @@ Join.prototype = {
     /**
      * Добавить данные к объединению.
      *
-     * @param {*[]} data Данные
+     * @param {Join~DataItem[]} data Данные
      * @returns {Join}
      */
     add: function(data) {

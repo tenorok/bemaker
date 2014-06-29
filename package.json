@@ -23,6 +23,6 @@
         "chai": "~1.9.1"
     },
     "scripts": {
-        "test": "./node_modules/.bin/mocha --reporter spec test/"
+        "test": "./node_modules/.bin/mocha test/"
     }
 }
