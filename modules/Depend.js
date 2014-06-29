@@ -1,3 +1,5 @@
+const Pool = require('./Pool');
+
 /**
  * Модуль.
  *
@@ -10,22 +12,37 @@
  * Модуль для сортировки модулей по зависимостям.
  *
  * @constructor
- * @param {Pool} [pool] Модули
+ * @param {Depend~Module[]|Pool} modules Модули
  */
-function Depend(pool) {
+function Depend(modules) {
 
     /**
-     * Модули.
+     * Модули без дубликатов.
+     *
+     * @private
+     * @type {Depend~Module[]}
+     */
+    this._modules = modules instanceof Pool ? modules.get() : new Pool(modules).get();
+
+    /**
+     * Хранилище отсортированных модулей.
      *
      * @private
      * @type {Pool}
      */
-    this._pool = pool;
+    this._pool = new Pool();
 }
 
 Depend.prototype = {
 
-    sort: function() {}
+    sort: function() {
+
+        this._modules.forEach(function(module) {
+            // sorting
+        }, this);
+
+        return this._pool.get();
+    }
 
 };
 
