@@ -156,17 +156,22 @@ Pool.prototype = {
      * Получить модули.
      *
      * При вызове без аргумента возвращает все имеющиеся модули.
-     * При вызове с заданными именем возвращает один искомый модуль.
+     * При вызове с заданными именем возвращает один искомый модуль
+     * или null, если модуль не найден.
      *
      * @param {string} [name] Имя модуля
-     * @returns {Pool~Module|Pool~Module[]}
+     * @returns {Pool~Module[]|Pool~Module|null}
      */
     get: function(name) {
         if(!name) return this._modules;
 
-        return this._modules.filter(function(module) {
-            return module.name === name;
-        })[0];
+        for(var i = 0; i < this._modules.length; i++) {
+            if(this._modules[i].name === name) {
+                return this._modules[i];
+            }
+        }
+
+        return null;
     },
 
     /**

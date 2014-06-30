@@ -23,6 +23,14 @@ describe('Модуль Pool.', function() {
             ]).get('b'), { name: 'b' });
         });
 
+        it('Получить несуществующий модуль', function() {
+            assert.isNull(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' }
+            ]).get('d'));
+        });
+
     });
 
     describe('Метод set.', function() {
