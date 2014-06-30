@@ -17,12 +17,12 @@ const Pool = require('./Pool');
 function Depend(modules) {
 
     /**
-     * Модули без дубликатов.
+     * Хранилище имеющихся модулей.
      *
      * @private
-     * @type {Depend~Module[]}
+     * @type {Pool}
      */
-    this._modules = modules instanceof Pool ? modules.get() : new Pool(modules).get();
+    this._modules = modules instanceof Pool ? modules : new Pool(modules);
 
     /**
      * Хранилище отсортированных модулей.
@@ -30,18 +30,45 @@ function Depend(modules) {
      * @private
      * @type {Pool}
      */
-    this._pool = new Pool();
+    this._sorted = new Pool();
 }
 
 Depend.prototype = {
 
+    /**
+     * Отсортировать модули по зависимостям.
+     *
+     * @returns {Depend~Module[]}
+     */
     sort: function() {
+        var modules = this._modules,
+            sorted = this._sorted;
 
-        this._modules.forEach(function(module) {
-            // sorting
+        modules.get().forEach(function(module) {
+            var require = module.require || [];
+
+            if(!sorted.exists(module)) {
+                require.forEach(function(requireName) {
+                    sorted.push(modules.get(requireName));
+                }, this);
+
+                sorted.push(module);
+            } else {
+                require.forEach(function(requireName) {
+                    if(!sorted.exists(requireName)) {
+                        return sorted.unshift(modules.get(requireName));
+                    }
+
+                    var moduleIndex = sorted.indexOf(module.name);
+                    if(sorted.indexOf(requireName) > moduleIndex) {
+                        sorted.move(requireName, moduleIndex - 1);
+                    }
+                }, this);
+            }
+
         }, this);
 
-        return this._pool.get();
+        return sorted.get();
     }
 
 };
