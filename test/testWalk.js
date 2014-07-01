@@ -9,8 +9,8 @@ const assert = require('chai').assert,
         'flat/c': path.join(__dirname, 'fixtures/walk/flat/c.txt'),
 
         flat2: path.join(__dirname, 'fixtures/walk/flat2/'),
-        'flat2/a': path.join(__dirname, 'fixtures/walk/flat/a.dart'),
-        'flat2/b': path.join(__dirname, 'fixtures/walk/flat/b.less')
+        'flat2/a': path.join(__dirname, 'fixtures/walk/flat2/a.dart'),
+        'flat2/b': path.join(__dirname, 'fixtures/walk/flat2/b.less')
     };
 
 describe('Модуль Walk.', function() {
@@ -26,6 +26,26 @@ describe('Модуль Walk.', function() {
                 'a.js',
                 'b.css',
                 'c.txt'
+            ]);
+            done();
+        });
+    });
+
+    it('Получить список файлов из двух директорий', function(done) {
+        new Walk([paths.flat, paths.flat2]).files().spread(function(filePaths, fileNames) {
+            assert.deepEqual(filePaths, [
+                paths['flat/a'],
+                paths['flat/b'],
+                paths['flat/c'],
+                paths['flat2/a'],
+                paths['flat2/b']
+            ]);
+            assert.deepEqual(fileNames, [
+                'a.js',
+                'b.css',
+                'c.txt',
+                'a.dart',
+                'b.less'
             ]);
             done();
         });
