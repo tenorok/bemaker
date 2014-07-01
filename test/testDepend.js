@@ -4,7 +4,7 @@ const assert = require('chai').assert,
 
 describe('Модуль Depend.', function() {
 
-    describe('Метод sort.', function() {
+    describe('Сортировка по полю require.', function() {
 
         it('Один модуль зависит от другого', function() {
             assert.deepEqual(new Depend([
