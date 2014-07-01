@@ -26,6 +26,48 @@ describe('Модуль Depend.', function() {
             ]);
         });
 
+        it('Циклическая зависимость двух модулей', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['b'] },
+                { name: 'b', require: ['a'] }
+            ]).sort(), [
+                { name: 'a', require: ['b'] },
+                { name: 'b', require: ['a'] }
+            ]);
+        });
+
+        it('Четыре модуля с множественными зависимостями', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['b'] },
+                { name: 'b', require: ['c', 'd'] },
+                { name: 'c' },
+                { name: 'd', require: ['c'] }
+            ]).sort(), [
+                { name: 'c' },
+                { name: 'd', require: ['c'] },
+                { name: 'b', require: ['c', 'd'] },
+                { name: 'a', require: ['b'] }
+            ]);
+        });
+
+        it('Шесть модулей с множественными зависимостями', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['f', 'e'] },
+                { name: 'b', require: ['a', 'c'] },
+                { name: 'c', require: ['f'] },
+                { name: 'd', require: ['a', 'b'] },
+                { name: 'e', require: ['d', 'f', 'a'] },
+                { name: 'f', require: ['a'] }
+            ]).sort(), [
+                { name: 'a', require: ['f', 'e'] },
+                { name: 'f', require: ['a'] },
+                { name: 'd', require: ['a', 'b'] },
+                { name: 'e', require: ['d', 'f', 'a'] },
+                { name: 'c', require: ['f'] },
+                { name: 'b', require: ['a', 'c'] }
+            ]);
+        });
+
     });
 
 });
