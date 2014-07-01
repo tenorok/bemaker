@@ -475,7 +475,7 @@ describe('Модуль Pool.', function() {
                     { name: 'b' },
                     { name: 'b' }
                 ]);
-            }, Error, 'A duplicate module b');
+            }, Error, 'Duplicate module b');
         });
 
         it('Получить ошибку о дублировании модулей при использовании метода set', function() {
@@ -485,13 +485,13 @@ describe('Модуль Pool.', function() {
                     { name: 'b' },
                     { name: 'a' }
                 ]);
-            }, Error, 'A duplicate module a');
+            }, Error, 'Duplicate module a');
         });
 
         it('Получить ошибку о дублировании модулей при использовании метода push', function() {
             assert.throws(function() {
                 new Pool([{ name: 'a' }]).push({ name: 'a' });
-            }, Error, 'A duplicate module a');
+            }, Error, 'Duplicate module a');
 
             assert.throws(function() {
                 new Pool().push([
@@ -499,7 +499,7 @@ describe('Модуль Pool.', function() {
                     { name: 'b' },
                     { name: 'b' }
                 ]);
-            }, Error, 'A duplicate module b');
+            }, Error, 'Duplicate module b');
         });
 
         it('Получить ошибку о дублировании модулей при использовании метода add', function() {
@@ -508,7 +508,7 @@ describe('Модуль Pool.', function() {
                     { name: 'b' },
                     { name: 'a' }
                 ], 1);
-            }, Error, 'A duplicate module a');
+            }, Error, 'Duplicate module a');
         });
 
     });

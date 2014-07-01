@@ -272,7 +272,7 @@ Pool.prototype = {
             if(modules.filter(function(module) {
                 return module.name === name;
             }).length > 1) {
-                throw new Error('A duplicate module ' + name);
+                throw new Error('Duplicate module ' + name);
             }
         });
         return modules;
