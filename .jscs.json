@@ -88,7 +88,6 @@
     "disallowMultipleLineBreaks": true,
     "validateQuoteMarks": "'",
     "disallowTrailingWhitespace": true,
-    "disallowKeywordsOnNewLine": ["else"],
     "requireLineFeedAtFileEnd": true,
     "maximumLineLength": 120,
     "requireCapitalizedConstructors": true,
