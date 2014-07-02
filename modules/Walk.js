@@ -25,7 +25,10 @@ Walk.prototype = {
     /**
      * Получить список объектов.
      *
-     * @returns {Promise}
+     * @returns {Promise} [
+     *      {string[]}, Плоский список всех объектов всех директорий
+     *      {string[][]} Список объектов каждой отдельной директории
+     * ]
      */
     list: function() {
         return Promise
@@ -34,10 +37,13 @@ Walk.prototype = {
                 return objects;
             }.bind(this), []))
             .then(function(objectsOfDirectories) {
-                return objectsOfDirectories.reduce(function(objects, list) {
-                    objects = objects.concat(list);
-                    return objects;
-                }, []);
+                return [
+                    objectsOfDirectories.reduce(function(objects, list) {
+                        objects = objects.concat(list);
+                        return objects;
+                    }, []),
+                    objectsOfDirectories
+                ];
             });
     },
 

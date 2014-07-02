@@ -10,7 +10,9 @@ const assert = require('chai').assert,
 
         flat2: path.join(__dirname, 'fixtures/walk/flat2/'),
         'flat2/a': path.join(__dirname, 'fixtures/walk/flat2/a.dart'),
-        'flat2/b': path.join(__dirname, 'fixtures/walk/flat2/b.less')
+        'flat2/b': path.join(__dirname, 'fixtures/walk/flat2/b.less'),
+
+        nest: path.join(__dirname, 'fixtures/walk/nest/')
     };
 
 describe('Модуль Walk.', function() {
@@ -54,24 +56,44 @@ describe('Модуль Walk.', function() {
     describe('Метод list.', function() {
 
         it('Получить список объектов директории', function(done) {
-            new Walk(paths.flat).list().then(function(objects) {
-                assert.deepEqual(objects, [
+            new Walk(paths.flat).list().spread(function(flat, nest) {
+                assert.deepEqual(flat, [
                     'a.js',
                     'b.css',
                     'c.txt'
                 ]);
+                assert.deepEqual(nest, [[
+                    'a.js',
+                    'b.css',
+                    'c.txt'
+                ]]);
                 done();
             });
         });
 
         it('Получить список объектов нескольких директорий', function(done) {
-            new Walk([paths.flat, paths.flat2]).list().then(function(objects) {
-                assert.deepEqual(objects, [
+            new Walk([paths.flat, paths.nest]).list().spread(function(flat, nest) {
+                assert.deepEqual(flat, [
                     'a.js',
                     'b.css',
                     'c.txt',
-                    'a.dart',
-                    'b.less'
+                    'a.js',
+                    'b.css',
+                    'nest2',
+                    'nest3'
+                ]);
+                assert.deepEqual(nest, [
+                    [
+                        'a.js',
+                        'b.css',
+                        'c.txt'
+                    ],
+                    [
+                        'a.js',
+                        'b.css',
+                        'nest2',
+                        'nest3'
+                    ]
                 ]);
                 done();
             });
