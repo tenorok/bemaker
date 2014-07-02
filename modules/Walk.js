@@ -1,4 +1,5 @@
 const path = require('path'),
+    fs = require('./fs'),
     walk = require('walk'),
     Promise = require('bluebird');
 
@@ -20,6 +21,25 @@ function Walk(directories) {
 }
 
 Walk.prototype = {
+
+    /**
+     * Получить список объектов.
+     *
+     * @returns {Promise}
+     */
+    list: function() {
+        return Promise
+            .all(this._directories.reduce(function(objects, directory) {
+                objects.push(fs.readdir(directory));
+                return objects;
+            }.bind(this), []))
+            .then(function(objectsOfDirectories) {
+                return objectsOfDirectories.reduce(function(objects, list) {
+                    objects = objects.concat(list);
+                    return objects;
+                }, []);
+            });
+    },
 
     /**
      * Получить список файлов.

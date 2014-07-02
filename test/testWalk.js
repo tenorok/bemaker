@@ -51,4 +51,32 @@ describe('Модуль Walk.', function() {
         });
     });
 
+    describe('Метод list.', function() {
+
+        it('Получить список объектов директории', function(done) {
+            new Walk(paths.flat).list().then(function(objects) {
+                assert.deepEqual(objects, [
+                    'a.js',
+                    'b.css',
+                    'c.txt'
+                ]);
+                done();
+            });
+        });
+
+        it('Получить список объектов нескольких директорий', function(done) {
+            new Walk([paths.flat, paths.flat2]).list().then(function(objects) {
+                assert.deepEqual(objects, [
+                    'a.js',
+                    'b.css',
+                    'c.txt',
+                    'a.dart',
+                    'b.less'
+                ]);
+                done();
+            });
+        });
+
+    });
+
 });
