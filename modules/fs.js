@@ -44,8 +44,8 @@ module.exports = {
      * Колбек вызывается для каждого открытого файла в методе readFiles.
      *
      * @callback fs~readFilesCallback
-     * @param {String} file Путь до файла
-     * @param {String} data Содержимое файла
+     * @param {string} file Путь до файла
+     * @param {string} data Содержимое файла
      */
 
     /**

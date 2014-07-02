@@ -99,6 +99,23 @@ describe('Модуль Walk.', function() {
             });
         });
 
+        it('Отфильтровать только файлы одной директории', function(done) {
+            new Walk(paths.nest).list(function(name, stats, index) {
+                if(index === 0) assert.equal(name, 'a.js');
+                else if(index === 1) assert.equal(name, 'b.css');
+                else if(index === 2) assert.equal(name, 'nest2');
+                else if(index === 3) assert.equal(name, 'nest3');
+
+                return stats.isFile();
+            }).spread(function(flat) {
+                assert.deepEqual(flat, [
+                    'a.js',
+                    'b.css'
+                ]);
+                done();
+            });
+        });
+
     });
 
 });

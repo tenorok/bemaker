@@ -23,28 +23,69 @@ function Walk(directories) {
 Walk.prototype = {
 
     /**
+     * Колбек вызывается на каждом объекте директории
+     * для фильтрации конечного списка объектов.
+     *
+     * Если функция возвращает `true`, объект будет включен в результирующий список.
+     *
+     * @callback Walk~filterCallback
+     * @param {string} name Имя объекта
+     * @param {fs.Stats} stats Информация об объекте
+     * @param {number} index Индекс объекта
+     * @returns {boolean}
+     */
+
+    /**
      * Получить список объектов.
      *
+     * @param {Walk~filterCallback} [filter] Функция фильтрации объектов
      * @returns {Promise} [
      *      {string[]}, Плоский список всех объектов всех директорий
      *      {string[][]} Список объектов каждой отдельной директории
      * ]
      */
-    list: function() {
+    list: function(filter) {
         return Promise
             .all(this._directories.reduce(function(objects, directory) {
-                objects.push(fs.readdir(directory));
+                objects.push(this._getDirectoryList(directory, filter));
                 return objects;
             }.bind(this), []))
-            .then(function(objectsOfDirectories) {
+            .then(function(nest) {
                 return [
-                    objectsOfDirectories.reduce(function(objects, list) {
+                    nest.reduce(function(objects, list) {
                         objects = objects.concat(list);
                         return objects;
                     }, []),
-                    objectsOfDirectories
+                    nest
                 ];
             });
+    },
+
+    /**
+     * Получить список объектов заданной директории.
+     *
+     * @private
+     * @param {string} directory Путь до директории
+     * @param {Walk~filterCallback} [filter] Функция фильтрации объектов
+     * @returns {Promise} {string[]} Список объектов
+     */
+    _getDirectoryList: function(directory, filter) {
+        return fs.readdir(directory).then(function(list) {
+            if(!filter) {
+                return list;
+            }
+
+            return Promise.all(list.reduce(function(stats, object) {
+                    stats.push(fs.fsAsync.statAsync(path.join(directory, object)));
+                    return stats;
+                }, []))
+                .then(function(stats) {
+                    return list.filter(function(name, index) {
+                        return filter.call(this, name, stats[index], index);
+                    }, this);
+                }.bind(this));
+
+        }.bind(this));
     },
 
     /**
