@@ -4,7 +4,7 @@ const fs = require('fs'),
     rimraf = require('rimraf'),
     moduleFs = require('../modules/fs'),
 
-    tmpPath = 'test/fixtures/tmp/',
+    tmpPath = path.join(__dirname, 'fixtures/tmp/'),
     filesPath = path.join(__dirname, 'fixtures/files/'),
     files = {
         a: path.join(__dirname, 'fixtures/files/a.js'),
@@ -32,19 +32,20 @@ describe('Модуль fs.', function() {
         });
 
         it('Проверить кеширование содержимого файлов', function(done) {
-            var file = 'test/fixtures/tmp/cache.js';
+            var file = path.join(tmpPath, 'cache.js');
             fs.writeFileSync(file, 'cached content');
 
             moduleFs.readFile(file).then(function(content) {
                 assert.equal(content, 'cached content');
-                fs.writeFileSync(file, 'other content');
-            }).catch(function(err) {
-                    done(err);
-                });
 
-            moduleFs.readFile(file).then(function(content) {
-                assert.equal(content, 'cached content');
-                done();
+                fs.writeFile(file, 'other content', function() {
+                    moduleFs.readFile(file).then(function(content) {
+                        assert.equal(content, 'cached content');
+                        done();
+                    }).catch(function(err) {
+                            done(err);
+                        });
+                });
             }).catch(function(err) {
                     done(err);
                 });
@@ -74,6 +75,54 @@ describe('Модуль fs.', function() {
                     done(new Error('Wrong file path.'));
                 }
             });
+        });
+
+    });
+
+    describe('Метод readdir.', function() {
+
+        it('Получить список объектов директории', function(done) {
+            moduleFs.readdir(filesPath).then(function(list) {
+                assert.deepEqual(list, [
+                    'a.js',
+                    'b.js',
+                    'c.js'
+                ]);
+                done();
+            }).catch(function(err) {
+                    done(err);
+                });
+        });
+
+        it('Проверить кеширование списка объектов директории', function(done) {
+            var tmpPathReaddir = path.join(tmpPath, 'readdir');
+            fs.mkdirSync(tmpPathReaddir);
+            fs.writeFileSync(path.join(tmpPathReaddir, 'a.js'), '');
+            fs.writeFileSync(path.join(tmpPathReaddir, 'b.css'), '');
+            fs.writeFileSync(path.join(tmpPathReaddir, 'c.html'), '');
+
+            moduleFs.readdir(tmpPathReaddir).then(function(list) {
+                assert.deepEqual(list, [
+                    'a.js',
+                    'b.css',
+                    'c.html'
+                ]);
+
+                fs.writeFile(path.join(tmpPathReaddir, 'd.dart'), '', function() {
+                    moduleFs.readdir(tmpPathReaddir).then(function(list) {
+                        assert.deepEqual(list, [
+                            'a.js',
+                            'b.css',
+                            'c.html'
+                        ]);
+                        done();
+                    }).catch(function(err) {
+                            done(err);
+                        });
+                });
+            }).catch(function(err) {
+                    done(err);
+                });
         });
 
     });

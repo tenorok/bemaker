@@ -7,7 +7,15 @@ const fs = require('fs'),
  * @private
  * @type {{}}
  */
-var _cacheFiles = {};
+var _cacheFiles = {},
+
+    /**
+     * Закешированные списки объектов директорий.
+     *
+     * @private
+     * @type {{}}
+     */
+    _cacheDirList = {};
 
 module.exports = {
 
@@ -60,6 +68,27 @@ module.exports = {
 
             return content;
         }.bind(this), []));
+    },
+
+    /**
+     * Получить список объектов директории.
+     *
+     * @param {string} dir Путь до директории
+     * @returns {Promise} {string[]} Имена объектов
+     */
+    readdir: function(dir) {
+        return new Promise(function(resolve, reject) {
+
+            if(_cacheDirList[dir]) {
+                return resolve(_cacheDirList[dir]);
+            }
+
+            fs.readdir(dir, function(err, files) {
+                if(err) return reject(err);
+                _cacheDirList[dir] = files = files || [];
+                resolve(files);
+            });
+        });
     },
 
     fsAsync: Promise.promisifyAll(fs)
