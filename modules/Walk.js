@@ -62,6 +62,30 @@ Walk.prototype = {
     },
 
     /**
+     * Получить список файлов рекурсивно.
+     *
+     * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов
+     */
+    filesRecur: function() {
+        return Promise
+            .all(this._directories.reduce(function(files, directory) {
+                files.push(this._getDirectoryFileList(directory));
+                return files;
+            }.bind(this), []))
+            .then(function(filesOfDirectories) {
+                var filePaths = [],
+                    fileNames = [];
+
+                filesOfDirectories.forEach(function(files) {
+                    filePaths = filePaths.concat(files[0]);
+                    fileNames = fileNames.concat(files[1]);
+                });
+
+                return [filePaths, fileNames];
+            });
+    },
+
+    /**
      * Получить список объектов заданной директории.
      *
      * @private
@@ -86,30 +110,6 @@ Walk.prototype = {
                 }.bind(this));
 
         }.bind(this));
-    },
-
-    /**
-     * Получить список файлов.
-     *
-     * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов
-     */
-    files: function() {
-        return Promise
-            .all(this._directories.reduce(function(files, directory) {
-                files.push(this._getDirectoryFileList(directory));
-                return files;
-            }.bind(this), []))
-            .then(function(filesOfDirectories) {
-                var filePaths = [],
-                    fileNames = [];
-
-                filesOfDirectories.forEach(function(files) {
-                    filePaths = filePaths.concat(files[0]);
-                    fileNames = fileNames.concat(files[1]);
-                });
-
-                return [filePaths, fileNames];
-            });
     },
 
     /**
