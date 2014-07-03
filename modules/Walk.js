@@ -79,6 +79,23 @@ Walk.prototype = {
     },
 
     /**
+     * Получить список папок.
+     *
+     * @param {Walk~filterCallback} [filter] Функция фильтрации директорий
+     * @returns {Promise} [
+     *      {string[]}, Плоский список всех папок всех директорий
+     *      {string[][]} Список папок каждой отдельной директории
+     * ]
+     */
+    dirs: function(filter) {
+        return this.list(function(name, stats, index) {
+            if(stats.isDirectory()) {
+                return filter ? filter.apply(this, arguments) : true;
+            }
+        });
+    },
+
+    /**
      * Получить список файлов рекурсивно.
      *
      * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов

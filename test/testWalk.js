@@ -130,6 +130,55 @@ describe('Модуль Walk.', function() {
 
     });
 
+    describe('Метод dirs.', function() {
+
+        it('Получить список папок директории', function(done) {
+            new Walk(paths.nest).dirs().spread(function(flat, nest) {
+                assert.deepEqual(flat, [
+                    'nest2',
+                    'nest3'
+                ]);
+                assert.deepEqual(nest, [[
+                    'nest2',
+                    'nest3'
+                ]]);
+                done();
+            });
+        });
+
+        it('Получить список папок директории кроме папки с именем nest2', function(done) {
+            new Walk(paths.nest).dirs(function(name, stats, index) {
+                if(index === 0) assert.equal(name, 'nest2');
+                else if(index === 1) assert.equal(name, 'nest3');
+
+                return name !== 'nest2';
+            }).spread(function(flat) {
+                    assert.deepEqual(flat, [
+                        'nest3'
+                    ]);
+                    done();
+                });
+        });
+
+        it('Получить список папок нескольких директорий', function(done) {
+            new Walk([paths.flat, paths.nest]).dirs().spread(function(flat, nest) {
+                assert.deepEqual(flat, [
+                    'nest2',
+                    'nest3'
+                ]);
+                assert.deepEqual(nest, [
+                    [],
+                    [
+                        'nest2',
+                        'nest3'
+                    ]
+                ]);
+                done();
+            });
+        });
+
+    });
+
     describe('Метод filesRecur.', function() {
 
         it('Получить список файлов директории', function(done) {
