@@ -62,6 +62,23 @@ Walk.prototype = {
     },
 
     /**
+     * Получить список файлов.
+     *
+     * @param {Walk~filterCallback} [filter] Функция фильтрации файлов
+     * @returns {Promise} [
+     *      {string[]}, Плоский список всех файлов всех директорий
+     *      {string[][]} Список файлов каждой отдельной директории
+     * ]
+     */
+    files: function(filter) {
+        return this.list(function(name, stats, index) {
+            if(stats.isFile()) {
+                return filter ? filter.apply(this, arguments) : true;
+            }
+        });
+    },
+
+    /**
      * Получить список файлов рекурсивно.
      *
      * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов

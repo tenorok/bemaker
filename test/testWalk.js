@@ -98,6 +98,38 @@ describe('Модуль Walk.', function() {
 
     });
 
+    describe('Метод files.', function() {
+
+        it('Получить список файлов директории', function(done) {
+            new Walk(paths.nest).files().spread(function(flat, nest) {
+                assert.deepEqual(flat, [
+                    'a.js',
+                    'b.css'
+                ]);
+                assert.deepEqual(nest, [[
+                    'a.js',
+                    'b.css'
+                ]]);
+                done();
+            });
+        });
+
+        it('Получить список js-файлов директории', function(done) {
+            new Walk(paths.nest).files(function(name, stats, index) {
+                if(index === 0) assert.equal(name, 'a.js');
+                else if(index === 1) assert.equal(name, 'b.css');
+
+                return path.extname(name) === '.js';
+            }).spread(function(flat) {
+                assert.deepEqual(flat, [
+                    'a.js'
+                ]);
+                done();
+            });
+        });
+
+    });
+
     describe('Метод filesRecur.', function() {
 
         it('Получить список файлов директории', function(done) {
