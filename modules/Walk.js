@@ -96,6 +96,52 @@ Walk.prototype = {
     },
 
     /**
+     * Получить список объектов рекурсивно.
+     *
+     * @param {Walk~filterCallback} [filter] Функция фильтрации объектов
+     * @returns {Promise} [
+     *      Плоский список всех файлов всех директорий
+     *      {{
+     *          names: string[],    Имена объектов
+     *          absolute: string[]  Абсолютные пути
+     *      }},
+     *      Список объектов каждой отдельной директории
+     *      {{
+     *          names: string[],    Имена объектов
+     *          absolute: string[], Абсолютные пути
+     *          relative: string[]  Относительные пути
+     *      }[]}
+     * ]
+     */
+    listRecur: function(filter) {
+        return Promise
+            .all(this._directories.reduce(function(files, directory) {
+                files.push(this._getDirectoryListRecur(directory));
+                return files;
+            }.bind(this), []))
+            .then(function(nest) {
+                var flatNames = [],
+                    flatAbsolute = [],
+                    nestByPath = [];
+
+                nest.forEach(function(objects, index) {
+                    flatNames = flatNames.concat(objects[0]);
+                    flatAbsolute = flatAbsolute.concat(objects[1]);
+
+                    nestByPath.push({
+                        names: objects[0],
+                        absolute: objects[1],
+                        relative: objects[1].reduce(function(relative, absolute) {
+                            return relative.concat(path.relative(this._directories[index], absolute));
+                        }.bind(this), [])
+                    });
+                }, this);
+
+                return [{ names: flatNames, absolute: flatAbsolute }, nestByPath];
+            }.bind(this));
+    },
+
+    /**
      * Получить список файлов рекурсивно.
      *
      * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов
@@ -167,6 +213,34 @@ Walk.prototype = {
 
             walker.on('end', function() {
                 resolve([filePaths, fileNames]);
+            });
+        });
+    },
+
+    /**
+     * Рекурсивно получить список объектов директории.
+     *
+     * @private
+     * @param {string} directory Путь до директории
+     * @returns {Promise} [
+     *      string[], Имена объектов
+     *      string[]  Абсолютные пути
+     * ]
+     */
+    _getDirectoryListRecur: function(directory, type) {
+        return new Promise(function(resolve) {
+            var walker = walk.walk(directory),
+                names = [],
+                absolute = [];
+
+            walker.on(type || 'node', function(root, stat, next) {
+                names.push(stat.name);
+                absolute.push(path.join(root, stat.name));
+                next();
+            }.bind(this));
+
+            walker.on('end', function() {
+                resolve([names, absolute]);
             });
         });
     }

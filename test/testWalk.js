@@ -3,19 +3,24 @@ const assert = require('chai').assert,
     Walk = require('../modules/Walk'),
 
     paths = {
-        flat: path.join(__dirname, 'fixtures/walk/flat/'),
+        flat: path.join(__dirname, 'fixtures/walk/flat'),
         'flat/a': path.join(__dirname, 'fixtures/walk/flat/a.js'),
         'flat/b': path.join(__dirname, 'fixtures/walk/flat/b.css'),
         'flat/c': path.join(__dirname, 'fixtures/walk/flat/c.txt'),
 
-        flat2: path.join(__dirname, 'fixtures/walk/flat2/'),
+        flat2: path.join(__dirname, 'fixtures/walk/flat2'),
         'flat2/a': path.join(__dirname, 'fixtures/walk/flat2/a.dart'),
         'flat2/b': path.join(__dirname, 'fixtures/walk/flat2/b.less'),
 
-        nest: path.join(__dirname, 'fixtures/walk/nest/'),
-        nest2: path.join(__dirname, 'fixtures/walk/nest/nest2/'),
-        nest3: path.join(__dirname, 'fixtures/walk/nest/nest3/'),
-        nest21: path.join(__dirname, 'fixtures/walk/nest/nest2/nest21/')
+        nest: path.join(__dirname, 'fixtures/walk/nest'),
+        'nest/a': path.join(__dirname, 'fixtures/walk/nest/a.js'),
+        'nest/b': path.join(__dirname, 'fixtures/walk/nest/b.css'),
+        nest2: path.join(__dirname, 'fixtures/walk/nest/nest2'),
+        'nest2/1': path.join(__dirname, 'fixtures/walk/nest/nest2/1.js'),
+        nest3: path.join(__dirname, 'fixtures/walk/nest/nest3'),
+        'nest3/10': path.join(__dirname, 'fixtures/walk/nest/nest3/10.js'),
+        nest21: path.join(__dirname, 'fixtures/walk/nest/nest2/nest21'),
+        'nest21/100': path.join(__dirname, 'fixtures/walk/nest/nest2/nest21/100.js')
     };
 
 describe('Модуль Walk.', function() {
@@ -172,6 +177,52 @@ describe('Модуль Walk.', function() {
                         'nest2',
                         'nest3'
                     ]
+                ]);
+                done();
+            });
+        });
+
+    });
+
+    describe('Метод listRecur.', function() {
+
+        it('Рекурсивно получить список объектов директории', function(done) {
+            new Walk(paths.nest).listRecur().spread(function(flat, nest) {
+                var names = [
+                        'a.js',
+                        'b.css',
+                        'nest2',
+                        'nest3',
+                        '10.js',
+                        '1.js',
+                        'nest21',
+                        '100.js'
+                    ],
+                    absolute = [
+                        paths['nest/a'],
+                        paths['nest/b'],
+                        paths.nest2,
+                        paths.nest3,
+                        paths['nest3/10'],
+                        paths['nest2/1'],
+                        paths.nest21,
+                        paths['nest21/100']
+                    ];
+
+                assert.deepEqual(flat.names, names);
+                assert.deepEqual(flat.absolute, absolute);
+
+                assert.deepEqual(nest[0].names, names);
+                assert.deepEqual(nest[0].absolute, absolute);
+                assert.deepEqual(nest[0].relative, [
+                    'a.js',
+                    'b.css',
+                    'nest2',
+                    'nest3',
+                    'nest3/10.js',
+                    'nest2/1.js',
+                    'nest2/nest21',
+                    'nest2/nest21/100.js'
                 ]);
                 done();
             });
