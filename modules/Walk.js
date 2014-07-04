@@ -116,7 +116,7 @@ Walk.prototype = {
     listRecur: function(filter) {
         return Promise
             .all(this._directories.reduce(function(files, directory) {
-                files.push(this._getDirectoryListRecur(directory));
+                files.push(this._getDirectoryListRecur(directory, 'node', filter));
                 return files;
             }.bind(this), []))
             .then(function(nest) {
@@ -222,20 +222,25 @@ Walk.prototype = {
      *
      * @private
      * @param {string} directory Путь до директории
+     * @param {string} type Тип искомых объектов
+     * @param {Walk~filterCallback} [filter] Функция фильтрации объектов
      * @returns {Promise} [
      *      string[], Имена объектов
      *      string[]  Абсолютные пути
      * ]
      */
-    _getDirectoryListRecur: function(directory, type) {
+    _getDirectoryListRecur: function(directory, type, filter) {
         return new Promise(function(resolve) {
             var walker = walk.walk(directory),
                 names = [],
-                absolute = [];
+                absolute = [],
+                index = 0;
 
-            walker.on(type || 'node', function(root, stat, next) {
-                names.push(stat.name);
-                absolute.push(path.join(root, stat.name));
+            walker.on(type, function(root, stat, next) {
+                if(!filter || filter.call(this, stat.name, stat, index++)) {
+                    names.push(stat.name);
+                    absolute.push(path.join(root, stat.name));
+                }
                 next();
             }.bind(this));
 

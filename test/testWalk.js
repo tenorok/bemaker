@@ -228,6 +228,52 @@ describe('Модуль Walk.', function() {
             });
         });
 
+        it('Рекурсивно получить список объектов нескольких директорий', function(done) {
+            new Walk([paths.nest2, paths.nest3]).listRecur().spread(function(flat, nest) {
+                assert.deepEqual(flat.names, [
+                    '1.js',
+                    'nest21',
+                    '100.js',
+                    '10.js'
+                ]);
+                assert.deepEqual(flat.absolute, [
+                    paths['nest2/1'],
+                    paths.nest21,
+                    paths['nest21/100'],
+                    paths['nest3/10']
+                ]);
+                assert.deepEqual(nest, [
+                    {
+                        names: ['1.js', 'nest21', '100.js'],
+                        absolute: [paths['nest2/1'], paths.nest21, paths['nest21/100']],
+                        relative: ['1.js', 'nest21', 'nest21/100.js']
+                    },
+                    {
+                        names: ['10.js'],
+                        absolute: [paths['nest3/10']],
+                        relative: ['10.js']
+                    }
+                ]);
+                done();
+            });
+        });
+
+        it('Отфильтровать только файлы одной директории', function(done) {
+            new Walk(paths.nest2).listRecur(function(name, stats, index) {
+                if(index === 0) assert.equal(name, '1.js');
+                else if(index === 1) assert.equal(name, 'nest21');
+                else if(index === 2) assert.equal(name, '100.js');
+
+                return stats.isFile();
+            }).spread(function(flat) {
+                    assert.deepEqual(flat.names, [
+                        '1.js',
+                        '100.js'
+                    ]);
+                    done();
+                });
+        });
+
     });
 
     describe('Метод filesRecur.', function() {
