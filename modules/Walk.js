@@ -144,25 +144,27 @@ Walk.prototype = {
     /**
      * Получить список файлов рекурсивно.
      *
-     * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов
+     * @param {Walk~filterCallback} [filter] Функция фильтрации файлов
+     * @returns {Promise} [
+     *      Плоский список всех файлов всех директорий
+     *      {{
+     *          names: string[],    Имена файлов
+     *          absolute: string[]  Абсолютные пути
+     *      }},
+     *      Список файлов каждой отдельной директории
+     *      {{
+     *          names: string[],    Имена файлов
+     *          absolute: string[], Абсолютные пути
+     *          relative: string[]  Относительные пути
+     *      }[]}
+     * ]
      */
-    filesRecur: function() {
-        return Promise
-            .all(this._directories.reduce(function(files, directory) {
-                files.push(this._getDirectoryFileList(directory));
-                return files;
-            }.bind(this), []))
-            .then(function(filesOfDirectories) {
-                var filePaths = [],
-                    fileNames = [];
-
-                filesOfDirectories.forEach(function(files) {
-                    filePaths = filePaths.concat(files[0]);
-                    fileNames = fileNames.concat(files[1]);
-                });
-
-                return [filePaths, fileNames];
-            });
+    filesRecur: function(filter) {
+        return this.listRecur(function(name, stats, index) {
+            if(stats.isFile()) {
+                return filter ? filter.apply(this, arguments) : true;
+            }
+        });
     },
 
     /**
@@ -190,31 +192,6 @@ Walk.prototype = {
                 }.bind(this));
 
         }.bind(this));
-    },
-
-    /**
-     * Получить список файлов директории.
-     *
-     * @private
-     * @param {string} directory Путь до директории
-     * @returns {Promise} [{string[]}, {string[]}] Список абсолютных путей и список имён файлов
-     */
-    _getDirectoryFileList: function(directory) {
-        return new Promise(function(resolve) {
-            var walker = walk.walk(directory),
-                filePaths = [],
-                fileNames = [];
-
-            walker.on('file', function(root, stat, next) {
-                filePaths.push(path.join(root, stat.name));
-                fileNames.push(stat.name);
-                next();
-            }.bind(this));
-
-            walker.on('end', function() {
-                resolve([filePaths, fileNames]);
-            });
-        });
     },
 
     /**

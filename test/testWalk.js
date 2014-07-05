@@ -278,40 +278,71 @@ describe('Модуль Walk.', function() {
 
     describe('Метод filesRecur.', function() {
 
-        it('Получить список файлов директории', function(done) {
-            new Walk(paths.flat).filesRecur().spread(function(filePaths, fileNames) {
-                assert.deepEqual(filePaths, [
-                    paths['flat/a'],
-                    paths['flat/b'],
-                    paths['flat/c']
-                ]);
-                assert.deepEqual(fileNames, [
+        it('Рекурсивно получить список файлов директории', function(done) {
+            new Walk(paths.nest).filesRecur().spread(function(flat, nest) {
+                assert.deepEqual(flat.names, [
                     'a.js',
                     'b.css',
-                    'c.txt'
+                    '10.js',
+                    '1.js',
+                    '100.js'
+                ]);
+                assert.deepEqual(flat.absolute, [
+                    paths['nest/a'],
+                    paths['nest/b'],
+                    paths['nest3/10'],
+                    paths['nest2/1'],
+                    paths['nest21/100']
                 ]);
                 done();
             });
         });
 
-        it('Получить список файлов из двух директорий', function(done) {
-            new Walk([paths.flat, paths.flat2]).filesRecur().spread(function(filePaths, fileNames) {
-                assert.deepEqual(filePaths, [
-                    paths['flat/a'],
-                    paths['flat/b'],
-                    paths['flat/c'],
-                    paths['flat2/a'],
-                    paths['flat2/b']
+        it('Рекурсивно получить список файлов нескольких директорий', function(done) {
+            new Walk([paths.nest2, paths.nest3]).filesRecur().spread(function(flat, nest) {
+                assert.deepEqual(flat.names, [
+                    '1.js',
+                    '100.js',
+                    '10.js'
                 ]);
-                assert.deepEqual(fileNames, [
-                    'a.js',
-                    'b.css',
-                    'c.txt',
-                    'a.dart',
-                    'b.less'
+                assert.deepEqual(flat.absolute, [
+                    paths['nest2/1'],
+                    paths['nest21/100'],
+                    paths['nest3/10']
+                ]);
+                assert.deepEqual(nest, [
+                    {
+                        names: ['1.js', '100.js'],
+                        absolute: [paths['nest2/1'], paths['nest21/100']],
+                        relative: ['1.js', 'nest21/100.js']
+                    },
+                    {
+                        names: ['10.js'],
+                        absolute: [paths['nest3/10']],
+                        relative: ['10.js']
+                    }
                 ]);
                 done();
             });
+        });
+
+        it('Отфильтровать некоторые файлы одной директории', function(done) {
+            new Walk(paths.nest).listRecur(function(name, stats, index) {
+                return path.extname(name) === '.css' || name === '100.js';
+            }).spread(function(flat, nest) {
+                    assert.deepEqual(flat.names, [
+                        'b.css',
+                        '100.js'
+                    ]);
+                    assert.deepEqual(nest, [
+                        {
+                            names: ['b.css', '100.js'],
+                            absolute: [paths['nest/b'], paths['nest21/100']],
+                            relative: ['b.css', 'nest2/nest21/100.js']
+                        }
+                    ]);
+                    done();
+                });
         });
 
     });
