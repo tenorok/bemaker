@@ -8,10 +8,6 @@ const assert = require('chai').assert,
         'flat/b': path.join(__dirname, 'fixtures/walk/flat/b.css'),
         'flat/c': path.join(__dirname, 'fixtures/walk/flat/c.txt'),
 
-        flat2: path.join(__dirname, 'fixtures/walk/flat2'),
-        'flat2/a': path.join(__dirname, 'fixtures/walk/flat2/a.dart'),
-        'flat2/b': path.join(__dirname, 'fixtures/walk/flat2/b.less'),
-
         nest: path.join(__dirname, 'fixtures/walk/nest'),
         'nest/a': path.join(__dirname, 'fixtures/walk/nest/a.js'),
         'nest/b': path.join(__dirname, 'fixtures/walk/nest/b.css'),
