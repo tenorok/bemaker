@@ -168,6 +168,32 @@ Walk.prototype = {
     },
 
     /**
+     * Получить список папок рекурсивно.
+     *
+     * @param {Walk~filterCallback} [filter] Функция фильтрации папок
+     * @returns {Promise} [
+     *      Плоский список всех папок всех директорий
+     *      {{
+     *          names: string[],    Имена папок
+     *          absolute: string[]  Абсолютные пути
+     *      }},
+     *      Список папок каждой отдельной директории
+     *      {{
+     *          names: string[],    Имена папок
+     *          absolute: string[], Абсолютные пути
+     *          relative: string[]  Относительные пути
+     *      }[]}
+     * ]
+     */
+    dirsRecur: function(filter) {
+        return this.listRecur(function(name, stats, index) {
+            if(stats.isDirectory()) {
+                return filter ? filter.apply(this, arguments) : true;
+            }
+        });
+    },
+
+    /**
      * Получить список объектов заданной директории.
      *
      * @private

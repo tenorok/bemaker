@@ -347,4 +347,59 @@ describe('Модуль Walk.', function() {
 
     });
 
+    describe('Метод dirsRecur.', function() {
+
+        it('Рекурсивно получить список папок директории', function(done) {
+            new Walk(paths.nest).dirsRecur().spread(function(flat, nest) {
+                assert.deepEqual(flat.names, [
+                    'nest2',
+                    'nest3',
+                    'nest21'
+                ]);
+                assert.deepEqual(flat.absolute, [
+                    paths.nest2,
+                    paths.nest3,
+                    paths.nest21
+                ]);
+                done();
+            });
+        });
+
+        it('Рекурсивно получить список папок нескольких директорий', function(done) {
+            new Walk([paths.nest2, paths.nest3]).dirsRecur().spread(function(flat, nest) {
+                assert.deepEqual(flat.names, [
+                    'nest21'
+                ]);
+                assert.deepEqual(flat.absolute, [
+                    paths.nest21
+                ]);
+                assert.deepEqual(nest, [
+                    {
+                        names: ['nest21'],
+                        absolute: [paths.nest21],
+                        relative: ['nest21']
+                    },
+                    {
+                        names: [],
+                        absolute: [],
+                        relative: []
+                    }
+                ]);
+                done();
+            });
+        });
+
+        it('Отфильтровать некоторые папки одной директории', function(done) {
+            new Walk(paths.nest).dirsRecur(function(name, stats, index) {
+                return name === 'nest3';
+            }).spread(function(flat, nest) {
+                    assert.deepEqual(flat.names, [
+                        'nest3'
+                    ]);
+                    done();
+                });
+        });
+
+    });
+
 });
