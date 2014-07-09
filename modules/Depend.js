@@ -1,4 +1,5 @@
-const Pool = require('./Pool');
+const doctrine = require('doctrine'),
+    Pool = require('./Pool');
 
 /**
  * Модуль.
@@ -9,7 +10,7 @@ const Pool = require('./Pool');
  */
 
 /**
- * Модуль для сортировки модулей по зависимостям.
+ * Модуль для работы с зависимостями.
  *
  * @constructor
  * @param {Depend~Module[]|Pool} modules Модули
@@ -73,6 +74,19 @@ Depend.prototype = {
         return sorted.get();
     }
 
+};
+
+/**
+ * Получить имена модулей из JSDoc.
+ *
+ * @param {string} jsdoc JSDoc
+ * @returns {string[]}
+ */
+Depend.jsdocParse = function(jsdoc) {
+    return doctrine.parse(jsdoc, { unwrap: true }).tags.reduce(function(modules, depend) {
+        modules.push(depend.description);
+        return modules;
+    }, []);
 };
 
 module.exports = Depend;

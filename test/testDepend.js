@@ -70,4 +70,17 @@ describe('Модуль Depend.', function() {
 
     });
 
+    describe('Получение зависимостей из jsdoc файла.', function() {
+
+        it('Получить имена модулей из простого JSDoc', function() {
+            assert.deepEqual(Depend.jsdocParse(
+                '/**\n' +
+                ' * @bemaker aaa\n' +
+                ' * @bemaker bbb\n' +
+                ' */'
+            ), ['aaa', 'bbb']);
+        });
+
+    });
+
 });
