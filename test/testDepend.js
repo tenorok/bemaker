@@ -81,6 +81,54 @@ describe('Модуль Depend.', function() {
             ), ['aaa', 'bbb']);
         });
 
+        it('Получить имена модулей из JSDoc среди стороннего содержимого', function() {
+            assert.deepEqual(Depend.jsdocParse(
+                'Bla-bla-bla\n' +
+                '/**\n' +
+                ' * @bemaker aaa\n' +
+                ' * @bemaker bbb\n' +
+                ' */\n' +
+                'Bla-bla-bla'
+            ), ['aaa', 'bbb']);
+        });
+
+        it('Получить имена модулей из смешанного JSDoc', function() {
+            assert.deepEqual(Depend.jsdocParse(
+                '/**\n' +
+                ' * @param ccc\n' +
+                ' * @bemaker aaa\n' +
+                ' * @type {string} ddd\n' +
+                ' * @bemaker bbb\n' +
+                ' */'
+            ), ['aaa', 'bbb']);
+        });
+
+        it('Получить имена модулей из нескольких блоков JSDoc', function() {
+            assert.deepEqual(Depend.jsdocParse(
+                '/**\n' +
+                ' * @bemaker aaa\n' +
+                ' * @bemaker bbb\n' +
+                ' */\n' +
+                'Bla-bla-bla\n' +
+                '/**\n' +
+                ' * @bemaker ccc\n' +
+                ' * @param ccc\n' +
+                ' */'
+            ), ['aaa', 'bbb', 'ccc']);
+        });
+
+        it('Получить имена модулей по изменённому тегу', function() {
+            assert.deepEqual(Depend.jsdocParse(
+                '/**\n' +
+                ' * @param ccc\n' +
+                ' * @depend aaa\n' +
+                ' * @type {string} ddd\n' +
+                ' * @depend bbb\n' +
+                ' */',
+                'depend'
+            ), ['aaa', 'bbb']);
+        });
+
     });
 
 });

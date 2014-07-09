@@ -1,4 +1,4 @@
-const doctrine = require('doctrine'),
+const jsdocParser = require('comment-parser'),
     Pool = require('./Pool');
 
 /**
@@ -80,12 +80,18 @@ Depend.prototype = {
  * Получить имена модулей из JSDoc.
  *
  * @param {string} jsdoc JSDoc
+ * @param {string} [tag=bemaker] Имя обрабатываемого JSDoc-тега
  * @returns {string[]}
  */
-Depend.jsdocParse = function(jsdoc) {
-    return doctrine.parse(jsdoc, { unwrap: true }).tags.reduce(function(modules, depend) {
-        modules.push(depend.description);
-        return modules;
+Depend.jsdocParse = function(jsdoc, tag) {
+    tag = tag || 'bemaker';
+    return jsdocParser(jsdoc).reduce(function(modules, jsdocBlock) {
+        return jsdocBlock.tags.reduce(function(modules, line) {
+            if(line.tag === tag) {
+                modules.push(line.name);
+            }
+            return modules;
+        }, modules);
     }, []);
 };
 
