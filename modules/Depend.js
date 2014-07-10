@@ -1,4 +1,5 @@
-const Pool = require('./Pool');
+const jsdocParser = require('comment-parser'),
+    Pool = require('./Pool');
 
 /**
  * Модуль.
@@ -9,7 +10,7 @@ const Pool = require('./Pool');
  */
 
 /**
- * Модуль для сортировки модулей по зависимостям.
+ * Модуль для работы с зависимостями.
  *
  * @constructor
  * @param {Depend~Module[]|Pool} modules Модули
@@ -73,6 +74,25 @@ Depend.prototype = {
         return sorted.get();
     }
 
+};
+
+/**
+ * Получить имена модулей из JSDoc.
+ *
+ * @param {string} jsdoc JSDoc
+ * @param {string} [tag=bemaker] Имя обрабатываемого JSDoc-тега
+ * @returns {string[]}
+ */
+Depend.parseJSDoc = function(jsdoc, tag) {
+    tag = tag || 'bemaker';
+    return jsdocParser(jsdoc).reduce(function(modules, jsdocBlock) {
+        return jsdocBlock.tags.reduce(function(modules, line) {
+            if(line.tag === tag) {
+                modules.push(line.name);
+            }
+            return modules;
+        }, modules);
+    }, []);
 };
 
 module.exports = Depend;
