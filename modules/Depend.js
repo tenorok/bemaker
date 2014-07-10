@@ -83,7 +83,7 @@ Depend.prototype = {
  * @param {string} [tag=bemaker] Имя обрабатываемого JSDoc-тега
  * @returns {string[]}
  */
-Depend.jsdocParse = function(jsdoc, tag) {
+Depend.parseJSDoc = function(jsdoc, tag) {
     tag = tag || 'bemaker';
     return jsdocParser(jsdoc).reduce(function(modules, jsdocBlock) {
         return jsdocBlock.tags.reduce(function(modules, line) {

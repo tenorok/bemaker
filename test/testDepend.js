@@ -73,7 +73,7 @@ describe('Модуль Depend.', function() {
     describe('Получение зависимостей из jsdoc файла.', function() {
 
         it('Получить имена модулей из простого JSDoc', function() {
-            assert.deepEqual(Depend.jsdocParse(
+            assert.deepEqual(Depend.parseJSDoc(
                 '/**\n' +
                 ' * @bemaker aaa\n' +
                 ' * @bemaker bbb\n' +
@@ -82,7 +82,7 @@ describe('Модуль Depend.', function() {
         });
 
         it('Получить имена модулей из JSDoc среди стороннего содержимого', function() {
-            assert.deepEqual(Depend.jsdocParse(
+            assert.deepEqual(Depend.parseJSDoc(
                 'Bla-bla-bla\n' +
                 '/**\n' +
                 ' * @bemaker aaa\n' +
@@ -93,7 +93,7 @@ describe('Модуль Depend.', function() {
         });
 
         it('Получить имена модулей из смешанного JSDoc', function() {
-            assert.deepEqual(Depend.jsdocParse(
+            assert.deepEqual(Depend.parseJSDoc(
                 '/**\n' +
                 ' * @param ccc\n' +
                 ' * @bemaker aaa\n' +
@@ -104,7 +104,7 @@ describe('Модуль Depend.', function() {
         });
 
         it('Получить имена модулей из нескольких блоков JSDoc', function() {
-            assert.deepEqual(Depend.jsdocParse(
+            assert.deepEqual(Depend.parseJSDoc(
                 '/**\n' +
                 ' * @bemaker aaa\n' +
                 ' * @bemaker bbb\n' +
@@ -118,7 +118,7 @@ describe('Модуль Depend.', function() {
         });
 
         it('Получить имена модулей по изменённому тегу', function() {
-            assert.deepEqual(Depend.jsdocParse(
+            assert.deepEqual(Depend.parseJSDoc(
                 '/**\n' +
                 ' * @param ccc\n' +
                 ' * @depend aaa\n' +
