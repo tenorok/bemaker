@@ -22,9 +22,19 @@ describe('Модуль Log.', function() {
         assert.equal(log.error('сообщение об ошибке'), clicolor[log.colors.error]('сообщение об ошибке'));
     });
 
+    it('Метод brackets.', function() {
+        assert.equal(log.brackets('string'),
+            clicolor[log.colors.bracket]('[') + 'string' + clicolor[log.colors.bracket](']')
+        );
+    });
+
     it('Указание операции в логирующем сообщении', function() {
-        assert.equal(log.log({ operation: 'read' }),
-            clicolor[log.colors.bracket]('[') + clicolor[log.colors.log]('read') + clicolor[log.colors.bracket](']')
+        assert.equal(log.log({ operation: 'read' }), log.brackets(clicolor[log.colors.log]('read')));
+    });
+
+    it('Указание пути в логирующем сообщении', function() {
+        assert.equal(log.log({ path: '~/path/to/directory/' }),
+            log.brackets(clicolor[log.colors.path]('~/path/to/directory/'))
         );
     });
 

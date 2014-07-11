@@ -131,6 +131,10 @@ Log.prototype = {
             if(message.operation) {
                 line.push(this.brackets(clicolor[this.colors[type]](message.operation)));
             }
+
+            if(message.path) {
+                line.push(this.brackets(clicolor[this.colors.path](message.path)));
+            }
         }
 
         var text = line.join(' ');
