@@ -22,4 +22,10 @@ describe('Модуль Log.', function() {
         assert.equal(log.error('сообщение об ошибке'), clicolor[log.colors.error]('сообщение об ошибке'));
     });
 
+    it('Указание операции в логирующем сообщении', function() {
+        assert.equal(log.log({ operation: 'read' }),
+            clicolor[log.colors.bracket]('[') + clicolor[log.colors.log]('read') + clicolor[log.colors.bracket](']')
+        );
+    });
+
 });

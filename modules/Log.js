@@ -126,6 +126,11 @@ Log.prototype = {
 
         if(typeof message === 'string') {
             line.push(clicolor[this.colors[type]](message));
+        } else {
+
+            if(message.operation) {
+                line.push(this.brackets(clicolor[this.colors[type]](message.operation)));
+            }
         }
 
         var text = line.join(' ');
@@ -135,6 +140,20 @@ Log.prototype = {
         }
 
         return text;
+    },
+
+    /**
+     * Обрамить строку квадратными скобками.
+     *
+     * @param {string} content Строка
+     * @returns {string}
+     */
+    brackets: function(content) {
+        return [
+            clicolor[this.colors.bracket]('[') +
+            content +
+            clicolor[this.colors.bracket](']')
+        ].join('');
     }
 
 };
