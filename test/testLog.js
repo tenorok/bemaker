@@ -10,4 +10,16 @@ describe('Модуль Log.', function() {
         assert.equal(log.log('логирующее сообщение'), clicolor[log.colors.log]('логирующее сообщение'));
     });
 
+    it('Простое информационное сообщение', function() {
+        assert.equal(log.info('информационное сообщение'), clicolor[log.colors.info]('информационное сообщение'));
+    });
+
+    it('Простое предупреждающее сообщение', function() {
+        assert.equal(log.warn('предупреждающее сообщение'), clicolor[log.colors.warn]('предупреждающее сообщение'));
+    });
+
+    it('Простое сообщение об ошибке', function() {
+        assert.equal(log.error('сообщение об ошибке'), clicolor[log.colors.error]('сообщение об ошибке'));
+    });
+
 });

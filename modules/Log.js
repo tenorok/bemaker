@@ -85,6 +85,36 @@ Log.prototype = {
     },
 
     /**
+     * Вывести информационное сообщение.
+     *
+     * @param {Log~Message} message Сообщение
+     * @returns {string}
+     */
+    info: function(message) {
+        return this.print('info', message);
+    },
+
+    /**
+     * Вывести предупреждающее сообщение.
+     *
+     * @param {Log~Message} message Сообщение
+     * @returns {string}
+     */
+    warn: function(message) {
+        return this.print('warn', message);
+    },
+
+    /**
+     * Вывести сообщение об ошибке.
+     *
+     * @param {Log~Message} message Сообщение
+     * @returns {string}
+     */
+    error: function(message) {
+        return this.print('error', message);
+    },
+
+    /**
      * Напечатать сообщение.
      *
      * @param {string} type Тип сообщения
