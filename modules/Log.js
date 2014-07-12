@@ -16,6 +16,15 @@ const _ = require('lodash'),
  */
 
 /**
+ * Функция-шаблон.
+ *
+ * @callback Log~patternCallback
+ * @this Log
+ * @param {Log~Message} message Сообщение
+ * @returns {string}
+ */
+
+/**
  * Модуль логирования.
  *
  * @constructor
@@ -70,6 +79,26 @@ function Log(out, colors) {
 
         total: 'red'
     });
+
+    /**
+     * Модуль cli-color.
+     *
+     * @type {cli-color}
+     */
+    this.clicolor = clicolor;
+
+    /**
+     * Функции-шаблоны стандартных типов сообщений.
+     *
+     * @private
+     * @type {{}}
+     */
+    this._patterns = {
+        log: this._defaultPattern,
+        info: this._defaultPattern,
+        warn: this._defaultPattern,
+        error: this._defaultPattern
+    };
 }
 
 Log.prototype = {
@@ -115,39 +144,15 @@ Log.prototype = {
     },
 
     /**
-     * Шаблон строки для вывода.
+     * Зарегистрировать тип сообщений.
      *
-     * @param {Log~Message} message Сообщение
-     * @returns {string}
+     * @param {string} type Имя типа
+     * @param {Log~patternCallback} pattern Функция-шаблон
+     * @returns {Log}
      */
-    pattern: function(message) {
-        if(typeof message === 'string') {
-            return message;
-        }
-
-        var line = [];
-
-        if(message.operation) {
-            line.push(this.brackets(message.operation));
-        }
-
-        if(message.path) {
-            line.push(this.brackets(message.path));
-        }
-
-        if(message.text) {
-            line.push(message.text);
-        }
-
-        if(message.description) {
-            line.push(message.description);
-        }
-
-        if(message.total) {
-            line.push(message.total + clicolor[this.colors.total]('ms'));
-        }
-
-        return line.join(' ');
+    register: function(type, pattern) {
+        this._patterns[type] = pattern;
+        return this;
     },
 
     /**
@@ -158,7 +163,7 @@ Log.prototype = {
      * @returns {string}
      */
     print: function(type, message) {
-        var line = this.pattern(this.colorize(type, message));
+        var line = this._patterns[type].call(this, this.colorize(type, message));
 
         if(this.out[type]) {
             this.out[type](line);
@@ -172,7 +177,7 @@ Log.prototype = {
      *
      * @param {string} type Тип сообщения
      * @param {Log~Message} message Сообщение
-     * @returns {string|Log~Message}
+     * @returns {Log~Message}
      */
     colorize: function(type, message) {
         if(typeof message === 'string') {
@@ -199,6 +204,43 @@ Log.prototype = {
             content +
             clicolor[this.colors.bracket](']')
         ].join('');
+    },
+
+    /**
+     * Шаблон строки для вывода.
+     *
+     * @private
+     * @param {Log~Message} message Сообщение
+     * @returns {string}
+     */
+    _defaultPattern: function(message) {
+        if(typeof message === 'string') {
+            return message;
+        }
+
+        var line = [];
+
+        if(message.operation) {
+            line.push(this.brackets(message.operation));
+        }
+
+        if(message.path) {
+            line.push(this.brackets(message.path));
+        }
+
+        if(message.text) {
+            line.push(message.text);
+        }
+
+        if(message.description) {
+            line.push(message.description);
+        }
+
+        if(message.total) {
+            line.push(message.total + this.clicolor[this.colors.total]('ms'));
+        }
+
+        return line.join(' ');
     }
 
 };
