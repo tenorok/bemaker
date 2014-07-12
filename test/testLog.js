@@ -28,14 +28,26 @@ describe('Модуль Log.', function() {
         );
     });
 
-    it('Указание операции в логирующем сообщении', function() {
+    it('Операция в логирующем сообщении', function() {
         assert.equal(log.log({ operation: 'read' }), log.brackets(clicolor[log.colors.log]('read')));
     });
 
-    it('Указание пути в логирующем сообщении', function() {
+    it('Путь в логирующем сообщении', function() {
         assert.equal(log.log({ path: '~/path/to/directory/' }),
             log.brackets(clicolor[log.colors.path]('~/path/to/directory/'))
         );
+    });
+
+    it('Текст в логирующем сообщении', function() {
+        assert.equal(log.log({ text: 'just text' }), clicolor[log.colors.text]('just text'));
+    });
+
+    it('Пояснение в логирующем сообщении', function() {
+        assert.equal(log.log({ description: 'description' }), clicolor[log.colors.description]('description'));
+    });
+
+    it('Длительность операции в логирующем сообщении', function() {
+        assert.equal(log.log({ total: 502 }), clicolor[log.colors.total]('502') + clicolor[log.colors.total]('ms'));
     });
 
 });

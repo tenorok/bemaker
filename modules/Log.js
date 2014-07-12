@@ -115,6 +115,42 @@ Log.prototype = {
     },
 
     /**
+     * Шаблон строки для вывода.
+     *
+     * @param {Log~Message} message Сообщение
+     * @returns {string}
+     */
+    pattern: function(message) {
+        if(typeof message === 'string') {
+            return message;
+        }
+
+        var line = [];
+
+        if(message.operation) {
+            line.push(this.brackets(message.operation));
+        }
+
+        if(message.path) {
+            line.push(this.brackets(message.path));
+        }
+
+        if(message.text) {
+            line.push(message.text);
+        }
+
+        if(message.description) {
+            line.push(message.description);
+        }
+
+        if(message.total) {
+            line.push(message.total + clicolor[this.colors.total]('ms'));
+        }
+
+        return line.join(' ');
+    },
+
+    /**
      * Напечатать сообщение.
      *
      * @param {string} type Тип сообщения
@@ -122,28 +158,33 @@ Log.prototype = {
      * @returns {string}
      */
     print: function(type, message) {
-        var line = [];
-
-        if(typeof message === 'string') {
-            line.push(clicolor[this.colors[type]](message));
-        } else {
-
-            if(message.operation) {
-                line.push(this.brackets(clicolor[this.colors[type]](message.operation)));
-            }
-
-            if(message.path) {
-                line.push(this.brackets(clicolor[this.colors.path](message.path)));
-            }
-        }
-
-        var text = line.join(' ');
+        var line = this.pattern(this.colorize(type, message));
 
         if(this.out[type]) {
-            this.out[type](text);
+            this.out[type](line);
         }
 
-        return text;
+        return line;
+    },
+
+    /**
+     * Раскрасить поля сообщения.
+     *
+     * @param {string} type Тип сообщения
+     * @param {Log~Message} message Сообщение
+     * @returns {string|Log~Message}
+     */
+    colorize: function(type, message) {
+        if(typeof message === 'string') {
+            return clicolor[this.colors[type]](message);
+        } else if(message.operation) {
+            message.operation = clicolor[this.colors[type]](message.operation);
+        }
+
+        return Object.keys(message).reduce(function(colored, key) {
+            colored[key] = this.colors[key] ? clicolor[this.colors[key]](message[key]) : message[key];
+            return colored;
+        }.bind(this), {});
     },
 
     /**
