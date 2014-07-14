@@ -88,6 +88,13 @@ function Log(out, colors) {
     this.clicolor = clicolor;
 
     /**
+     * Модуль moment.
+     *
+     * @type {moment}
+     */
+    this.moment = moment;
+
+    /**
      * Функции-шаблоны стандартных типов сообщений.
      *
      * @private
@@ -218,7 +225,7 @@ Log.prototype = {
             return message;
         }
 
-        var line = [];
+        var line = [this.clicolor[this.colors.time](this.moment().format('HH:mm:ss.SSS') + ' -')];
 
         if(message.operation) {
             line.push(this.brackets(message.operation));
