@@ -1,0 +1,5 @@
+/**
+ * @bemaker button
+ */
+
+function input() {}

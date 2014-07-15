@@ -1,0 +1,5 @@
+/**
+ * @bemaker link
+ */
+
+function button() {}
