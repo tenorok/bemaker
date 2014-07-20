@@ -35,10 +35,30 @@ const path = require('path'),
 /**
  * Список блоков, их уровни переопределения и файлы.
  *
+ * @typedef {Pool} Make~poolBlocksLevelsFiles
+ *
+ * Где каждый модуль: {
+ *      name: string,               Имя блока
+ *      levels: {                   Уровни переопределения, на которых присутствует блок
+ *          path: string,           Абсолютный путь до уровня
+ *          files: {                Файлы блока на текущем уровне
+ *              basename: string,   Имя файла
+ *              extname: string',   Расширение файла
+ *              path: string,       Абсолютный путь до файла
+ *              selector: Selector  Экземпляр модуля bemer.Selector
+ *          }[]
+ *      }[]
+ * }
+ */
+
+/**
+ * Список блоков, их уровни переопределения, файлы и зависимости.
+ *
  * @typedef {Pool} Make~poolBlocks
  *
  * Где каждый модуль: {
  *      name: string,               Имя блока
+ *      require: string[],          Зависимости блока
  *      levels: {                   Уровни переопределения, на которых присутствует блок
  *          path: string,           Абсолютный путь до уровня
  *          files: {                Файлы блока на текущем уровне
@@ -79,7 +99,9 @@ Make.prototype = {
      * @returns {Promise} Make~poolBlocks
      */
     getBlocks: function() {
-        return this._getBlocksList().then(this._getLevelsFiles.bind(this));
+        return this._getBlocksList()
+            .then(this._getLevelsFiles.bind(this))
+            .then(this._getBlocksDepends.bind(this));
     },
 
     /**
@@ -109,7 +131,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
-     * @returns {Promise} Make~poolBlocks
+     * @returns {Promise} Make~poolBlocksLevelsFiles
      */
     _getLevelsFiles: function(blocks) {
         return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
@@ -136,6 +158,35 @@ Make.prototype = {
                 }));
             }, []));
         }, [])).then(function() {
+                return blocks;
+            });
+    },
+
+    /**
+     * Получить зависимости блоков.
+     *
+     * @private
+     * @param {Make~poolBlocksLevelsFiles} blocks Список блоков, их уровни переопределения и файлы
+     * @returns {Promise} Make~poolBlocks
+     */
+    _getBlocksDepends: function(blocks) {
+        return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
+            block.levels.forEach(function(level) {
+                level.files.forEach(function(file) {
+                    if(file.extname === this._config.dependext) {
+                        promises.push(fs.readFile(file.path).then(function(content) {
+                            var require = Depend.parseJSDoc(content, this._config.jsdoctag);
+
+                            blocks.get()[blockIndex].require = blocks.get()[blockIndex].require
+                                ? blocks.get()[blockIndex].require.concat(require)
+                                : require;
+                            return file;
+                        }.bind(this)));
+                    }
+                }, this);
+            }, this);
+            return promises;
+        }.bind(this), [])).then(function() {
                 return blocks;
             });
     }

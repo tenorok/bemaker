@@ -1,1 +1,5 @@
+/**
+ * @bemaker checkbox
+ */
+
 function buttonDesktop() {}

@@ -1,14 +1,18 @@
 function link() {}
 
+function checkbox_mod_val() {}
+
 /**
  * @bemaker link
  */
 
 function button() {}
 
-function buttonDesktop() {}
+/**
+ * @bemaker checkbox
+ */
 
-function checkbox_mod_val() {}
+function buttonDesktop() {}
 
 /**
  * @bemaker button

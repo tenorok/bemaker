@@ -1,3 +1,7 @@
+.checkbox {}
+
+.under {}
+
 .button {}
 
 .button__control {}
@@ -5,8 +9,6 @@
 .ie .buttonDesktop {}
 
 .buttonDesktop__control {}
-
-.checkbox {}
 
 .input {}
 

@@ -69,7 +69,8 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        require: ['link', 'checkbox']
                     },
                     {
                         name: 'checkbox',
@@ -91,7 +92,8 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        require: []
                     },
                     {
                         name: 'input',
@@ -119,7 +121,8 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        require: ['button', 'checkbox']
                     },
                     {
                         name: 'link',
@@ -135,7 +138,8 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        require: ['under']
                     },
                     {
                         name: 'select',
@@ -163,6 +167,23 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
+                        ],
+                        require: ['button', 'link']
+                    },
+                    {
+                        name: 'under',
+                        levels: [
+                            {
+                                path: common,
+                                files: [
+                                    {
+                                        basename: 'under',
+                                        extname: '.css',
+                                        path: path.join(common, 'under/under.css'),
+                                        selector: new Selector('under')
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
@@ -185,7 +206,8 @@ describe('Модуль Make.', function() {
                                     }
                                 ]
                             }
-                        ]
+                        ],
+                        require: ['button', 'input', 'select']
                     }
                 ]);
                 done();
