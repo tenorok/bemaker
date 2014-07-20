@@ -1,6 +1,10 @@
 const path = require('path'),
     _ = require('lodash'),
+    Promise = require('bluebird'),
+    Selector = require('bemer').modules('Selector'),
+    fs = require('./fs'),
     Walk = require('./Walk'),
+    Pool = require('./Pool'),
     Depend = require('./Depend');
 
 /**
@@ -13,6 +17,38 @@ const path = require('path'),
  * @property {string[]} config.extensions Расширения файлов к сборке
  * @property {string} [config.dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [config.jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
+ */
+
+/**
+ * Список блоков и уровни переопределения, на которых они присутствуют.
+ *
+ * @typedef {Pool} Make~poolBlocksList
+ *
+ * Где каждый модуль: {
+ *      name: string,     Имя блока
+ *      levels: {         Уровни переопределения, на которых присутствует блок
+ *          path: string  Абсолютный путь до уровня
+ *      }[]
+ * }
+ */
+
+/**
+ * Список блоков, их уровни переопределения и файлы.
+ *
+ * @typedef {Pool} Make~poolBlocks
+ *
+ * Где каждый модуль: {
+ *      name: string,               Имя блока
+ *      levels: {                   Уровни переопределения, на которых присутствует блок
+ *          path: string,           Абсолютный путь до уровня
+ *          files: {                Файлы блока на текущем уровне
+ *              basename: string,   Имя файла
+ *              extname: string',   Расширение файла
+ *              path: string,       Абсолютный путь до файла
+ *              selector: Selector  Экземпляр модуля bemer.Selector
+ *          }[]
+ *      }[]
+ * }
  */
 
 /**
@@ -38,44 +74,70 @@ function Make(config) {
 Make.prototype = {
 
     /**
-     * Собрать файлы.
+     * Получить список блоков со всех уровней.
      *
-     * @returns {Promise}
+     * @returns {Promise} Make~poolBlocks
      */
-    build: function() {
-        return this._getFileList().then(function(dirs) {
-            // console.log(dirs);
-        });
+    getBlocks: function() {
+        return this._getBlocksList().then(this._getLevelsFiles.bind(this));
     },
 
     /**
-     * Получить список файлов со всех уровней.
+     * Получить список блоков и уровни переопределения,
+     * на которых они присутствуют.
      *
      * @private
-     * @returns {Promise} [
-     *      [
-     *          { dirname: 'dir', basename: 'file', extname: '.ext' }
-     *          ...
-     *      ]
-     *      ...
-     * ]
+     * @returns {Promise} Make~poolBlocksList
      */
-    _getFileList: function() {
-        return new Walk(this._config.directories).filesRecur().spread(function(flat, nest) {
-            var dirs = [];
-            nest.forEach(function(dir) {
-                var files = [];
-                dir.relative.forEach(function(relativePath) {
-                    files.push({
-                        dirname: path.dirname(relativePath),
-                        basename: path.basename(relativePath),
-                        extname: path.extname(relativePath)
-                    });
+    _getBlocksList: function() {
+        var blocks = new Pool();
+        return new Walk(this._config.directories).dirs().spread(function(flat, levels) {
+            levels.forEach(function(blocksList, levelIndex) {
+                var levelPath = this._config.directories[levelIndex];
+                blocksList.forEach(function(block) {
+                    blocks.exists(block)
+                        ? blocks.get(block).levels.push({ path: levelPath })
+                        : blocks.push({ name: block, levels: [{ path: levelPath }] });
                 });
-                dirs.push(files);
+            }, this);
+            return blocks;
+        }.bind(this));
+    },
+
+    /**
+     * Получить файлы блоков на каждом уровне переопределения.
+     *
+     * @private
+     * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
+     * @returns {Promise} Make~poolBlocks
+     */
+    _getLevelsFiles: function(blocks) {
+        return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
+            return promises.concat(block.levels.reduce(function(promises, level, levelIndex) {
+                return promises.concat(new Walk(path.join(level.path, block.name)).filesRecur().spread(function(list) {
+                    blocks.get()[blockIndex].levels[levelIndex].files =
+                        list.names.reduce(function(files, fileName, fileIndex) {
+                            var extname = '.' + fileName.split('.').slice(1).join('.'),
+                                basename = path.basename(fileName, extname),
+                                selector = new Selector(basename);
+
+                            if(!selector.block()) {
+                                selector.block(block.name);
+                            }
+
+                            files.push({
+                                basename: basename,
+                                extname: extname,
+                                path: list.absolute[fileIndex],
+                                selector: selector
+                            });
+                            return files;
+                        }, []);
+                }));
+            }, []));
+        }, [])).then(function() {
+                return blocks;
             });
-            return dirs;
-        });
     }
 
 };
