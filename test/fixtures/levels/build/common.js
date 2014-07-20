@@ -6,6 +6,8 @@ function link() {}
 
 function button() {}
 
+function checkbox_mod_val() {}
+
 /**
  * @bemaker button
  */

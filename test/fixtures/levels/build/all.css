@@ -1,7 +1,19 @@
 .button {}
 
+.button__control {}
+
+.ie .buttonDesktop {}
+
+.buttonDesktop__control {}
+
+.checkbox {}
+
 .input {}
 
+.input__control {}
+
 .select {}
+
+.select_mod_val {}
 
 .popup {}

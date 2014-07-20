@@ -8,6 +8,8 @@ function button() {}
 
 function buttonDesktop() {}
 
+function checkbox_mod_val() {}
+
 /**
  * @bemaker button
  */
