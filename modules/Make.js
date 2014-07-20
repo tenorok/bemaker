@@ -105,6 +105,24 @@ Make.prototype = {
     },
 
     /**
+     * Отсортировать блоки по зависимостям
+     * и их файлы по весу селекторов.
+     *
+     * @param {Make~poolBlocks} blocks Список блоков
+     * @returns {Make~poolBlocks} Отсортированный список блоков
+     */
+    sort: function(blocks) {
+        blocks.get().forEach(function(block) {
+            block.levels.forEach(function(level) {
+                level.files.sort(function(file1, file2) {
+                    return file1.selector.weight() > file2.selector.weight();
+                });
+            });
+        });
+        return new Depend(blocks).sort();
+    },
+
+    /**
      * Получить список блоков и уровни переопределения,
      * на которых они присутствуют.
      *
