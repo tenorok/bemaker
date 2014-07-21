@@ -3,6 +3,7 @@ const fs = require('fs'),
     assert = require('chai').assert,
     Selector = require('bemer').modules('Selector'),
     Make = require('../modules/Make'),
+    Join = require('../modules/Join'),
 
     tmp = path.join(__dirname, 'fixtures/tmp/'),
     common = path.join(__dirname, 'fixtures/levels/common/'),
@@ -421,6 +422,46 @@ describe('Модуль Make.', function() {
                         require: ['button', 'input', 'select']
                     }
                 ]);
+                done();
+            });
+    });
+
+    it('Метод groupByTech', function(done) {
+        var make = new Make({
+            directories: [common, desktop],
+            extensions: ['.js', '.css', '.ie.css']
+        });
+        make.getBlocks()
+            .then(make.sort.bind(make))
+            .then(make.groupByTech.bind(make))
+            .then(function(groups) {
+                assert.deepEqual(groups, {
+                    '.js': new Join().addFiles([
+                        path.join(common, 'link/link.js'),
+                        path.join(common, 'checkbox/_mod/checkbox_mod_val.js'),
+                        path.join(common, 'button/button.js'),
+                        path.join(desktop, 'button/button.js'),
+                        path.join(common, 'input/input.js'),
+                        path.join(common, 'select/select.js'),
+                        path.join(desktop, 'popup/popup.js')
+                    ]),
+                    '.css': new Join().addFiles([
+                        path.join(common, 'under/under.css'),
+                        path.join(common, 'link/__blank.css'),
+                        path.join(common, 'checkbox/checkbox.css'),
+                        path.join(common, 'button/button.css'),
+                        path.join(common, 'button/__control.css'),
+                        path.join(desktop, 'button/__control/button__control.css'),
+                        path.join(common, 'input/input.css'),
+                        path.join(common, 'input/__control/__control.css'),
+                        path.join(common, 'select/select.css'),
+                        path.join(common, 'select/_mod_val/_mod_val.css'),
+                        path.join(desktop, 'popup/popup.css')
+                    ]),
+                    '.ie.css': new Join().addFiles([
+                        path.join(desktop, 'button/button.ie.css')
+                    ])
+                });
                 done();
             });
     });

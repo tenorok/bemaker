@@ -5,7 +5,8 @@ const path = require('path'),
     fs = require('./fs'),
     Walk = require('./Walk'),
     Pool = require('./Pool'),
-    Depend = require('./Depend');
+    Depend = require('./Depend'),
+    Join = require('./Join');
 
 /**
  * Опции сборки.
@@ -72,6 +73,15 @@ const path = require('path'),
  */
 
 /**
+ * Сгруппированные файлы блоков по технологиям.
+ *
+ * Ключами являются расширения файлов.
+ *
+ * @typedef {{}} Make~groupByTech
+ * @property {Join} * Файлы блоков по технологии ключа
+ */
+
+/**
  * Модуль логики сборки.
  *
  * @constructor
@@ -120,6 +130,27 @@ Make.prototype = {
             });
         });
         return new Depend(blocks).sort();
+    },
+
+    /**
+     * Сгруппировать файлы блоков по технологиям.
+     *
+     * @param {Make~poolBlocks} blocks Список блоков
+     * @returns {Make~groupByTech}
+     */
+    groupByTech: function(blocks) {
+        return blocks.reduce(function(groups, block) {
+            block.levels.forEach(function(level) {
+                level.files.forEach(function(file) {
+                    if(groups[file.extname]) {
+                        groups[file.extname].addFiles([file.path]);
+                    } else {
+                        groups[file.extname] = new Join([{ file: file.path }]);
+                    }
+                });
+            });
+            return groups;
+        }, {});
     },
 
     /**
