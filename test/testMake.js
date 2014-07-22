@@ -29,7 +29,7 @@ describe('Модуль Make.', function() {
             directories: [common, desktop],
             extensions: ['.js', '.css']
         }).getBlocks().then(function(blocks) {
-                assert.deepEqual(blocks.get(), [
+                assert.deepEqual(blocks.get().sort(function(a, b) { return a.name < b.name }), [
                     {
                         name: 'button',
                         levels: [
@@ -225,7 +225,82 @@ describe('Модуль Make.', function() {
                         ],
                         require: ['button', 'input', 'select']
                     }
-                ]);
+                ].sort(function(a, b) { return a.name < b.name }));
+                done();
+            });
+    });
+
+    it('Метод filter', function(done) {
+        var make = new Make({
+            directories: [common, desktop],
+            extensions: ['.js', '.css'],
+            blocks: ['link', 'checkbox']
+        });
+        make.getBlocks().then(function(blocks) {
+                assert.deepEqual(make.filter(blocks).get().sort(function(a, b) { return a.name < b.name }), [
+                    {
+                        name: 'checkbox',
+                        levels: [
+                            {
+                                path: common,
+                                files: [
+                                    {
+                                        basename: 'checkbox',
+                                        extname: '.css',
+                                        path: path.join(common, 'checkbox/checkbox.css'),
+                                        selector: new Selector('checkbox')
+                                    },
+                                    {
+                                        basename: 'checkbox_mod_val',
+                                        extname: '.js',
+                                        path: path.join(common, 'checkbox/_mod/checkbox_mod_val.js'),
+                                        selector: new Selector('checkbox_mod_val')
+                                    }
+                                ]
+                            }
+                        ],
+                        require: []
+                    },
+                    {
+                        name: 'link',
+                        levels: [
+                            {
+                                path: common,
+                                files: [
+                                    {
+                                        basename: '__blank',
+                                        extname: '.css',
+                                        path: path.join(common, 'link/__blank.css'),
+                                        selector: new Selector('__blank').block('link')
+                                    },
+                                    {
+                                        basename: 'link',
+                                        extname: '.js',
+                                        path: path.join(common, 'link/link.js'),
+                                        selector: new Selector('link')
+                                    }
+                                ]
+                            }
+                        ],
+                        require: ['under']
+                    },
+                    {
+                        name: 'under',
+                        levels: [
+                            {
+                                path: common,
+                                files: [
+                                    {
+                                        basename: 'under',
+                                        extname: '.css',
+                                        path: path.join(common, 'under/under.css'),
+                                        selector: new Selector('under')
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ].sort(function(a, b) { return a.name < b.name }));
                 done();
             });
     });

@@ -16,6 +16,7 @@ const path = require('path'),
  * @property {string} outname Имя для сохраняемых файлов
  * @property {string[]} directories Директории для поиска блоков (уровни переопределения)
  * @property {string[]} extensions Расширения файлов к сборке
+ * @property {string[]} [blocks] Блоки для сборки, по умолчанию собираются все блоки
  * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
  */
@@ -121,6 +122,19 @@ Make.prototype = {
         return this._getBlocksList()
             .then(this._getLevelsFiles.bind(this))
             .then(this._getBlocksDepends.bind(this));
+    },
+
+    /**
+     * Отфильтровать требуемые блоки
+     * на основании поля `blocks` в опциях сборки.
+     *
+     * @param {Make~poolBlocks} blocks Список блоков
+     * @returns {Make~poolBlocks}
+     */
+    filter: function(blocks) {
+        return this._config.blocks
+            ? new Pool(new Depend(blocks).filter(this._config.blocks))
+            : blocks;
     },
 
     /**
