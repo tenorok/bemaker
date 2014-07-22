@@ -70,6 +70,39 @@ describe('Модуль Depend.', function() {
 
     });
 
+    describe('Фильтрация модулей для заданного модуля', function() {
+
+        it('Фильтрация одного модуля', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['d'] },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd', require: ['b'] },
+                { name: 'e' }
+            ]).filter('a'), [
+                { name: 'a', require: ['d'] },
+                { name: 'b' },
+                { name: 'd', require: ['b'] }
+            ]);
+        });
+
+        it('Фильтрация одного модуля с множественными зависимостями', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['b', 'c'] },
+                { name: 'b', require: ['c', 'd'] },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).filter('a'), [
+                { name: 'a', require: ['b', 'c'] },
+                { name: 'b', require: ['c', 'd'] },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Получение зависимостей из jsdoc файла.', function() {
 
         it('Получить имена модулей из простого JSDoc', function() {
