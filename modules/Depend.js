@@ -75,13 +75,20 @@ Depend.prototype = {
     },
 
     /**
-     * Отфильтровать модули для заданного модуля по зависимостям.
+     * Отфильтровать модули для заданного модуля
+     * или нескольких модулей по зависимостям.
      *
-     * @param {string} name Имя заданного модуля
+     * @param {string|string[]} name Имя заданного модуля или нескольких модулей
      * @returns {Depend~Module[]}
      */
     filter: function(name) {
-        return this._modules.filter(this._filter(name, [])).get();
+        return this._modules.filter(
+            typeof name === 'string'
+                ? this._filter(name, [])
+                : name.reduce(function(filteredNames, name) {
+                    return filteredNames.concat(this._filter(name, []));
+                }.bind(this), [])
+        ).get();
     },
 
     /**
