@@ -12,12 +12,12 @@ const path = require('path'),
  * Опции сборки.
  *
  * @typedef {{}} Make~Config
- * @property {string} config.outdir Директория для сохранения файлов
- * @property {string} config.outname Имя для сохраняемых файлов
- * @property {string[]} config.directories Директории для поиска блоков (уровни переопределения)
- * @property {string[]} config.extensions Расширения файлов к сборке
- * @property {string} [config.dependext=.js] Расширение файла для чтения зависимостей
- * @property {string} [config.jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
+ * @property {string} outdir Директория для сохранения файлов
+ * @property {string} outname Имя для сохраняемых файлов
+ * @property {string[]} directories Директории для поиска блоков (уровни переопределения)
+ * @property {string[]} extensions Расширения файлов к сборке
+ * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
+ * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
  */
 
 /**
@@ -77,8 +77,17 @@ const path = require('path'),
  *
  * Ключами являются расширения файлов.
  *
- * @typedef {{}} Make~groupByTech
+ * @typedef {{}} Make~groupsByTech
  * @property {Join} * Файлы блоков по технологии ключа
+ */
+
+/**
+ * Содержимое файлов блоков по технологиям.
+ *
+ * Ключами являются расширения файлов.
+ *
+ * @typedef {{}} Make~contentByTech
+ * @property {Join} * Содержимое файлов блоков по технологии ключа
  */
 
 /**
@@ -136,7 +145,7 @@ Make.prototype = {
      * Сгруппировать файлы блоков по технологиям.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @returns {Make~groupByTech}
+     * @returns {Make~groupsByTech}
      */
     groupByTech: function(blocks) {
         return blocks.reduce(function(groups, block) {
@@ -151,6 +160,33 @@ Make.prototype = {
             });
             return groups;
         }, {});
+    },
+
+    /**
+     * Сохранить файлы по технологиям.
+     *
+     * @param {Make~groupsByTech} groups Файлы блоков по технологиям
+     * @returns {Promise} Make~contentByTech
+     */
+    writeFilesByTech: function(groups) {
+        var content = {};
+        return Promise.all(Object.keys(groups).reduce(function(promises, extname) {
+            return promises.concat(groups[extname].toString().then(function(joined) {
+                content[extname] = joined;
+            }));
+        }, []))
+            .then(function() {
+                return Promise.all(Object.keys(content).reduce(function(promises, extname) {
+                    promises.push(fs.fsAsync.writeFileAsync(
+                        path.join(this._config.outdir, this._config.outname + extname),
+                        content[extname]
+                    ));
+                    return promises;
+                }.bind(this), []));
+            }.bind(this))
+            .then(function() {
+                return content;
+            });
     },
 
     /**

@@ -6,10 +6,23 @@ const fs = require('fs'),
     Join = require('../modules/Join'),
 
     tmp = path.join(__dirname, 'fixtures/tmp/'),
+    tmpAll = {
+        js: path.join(__dirname, 'fixtures/tmp/all.js'),
+        css: path.join(__dirname, 'fixtures/tmp/all.css'),
+        iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css')
+    },
     common = path.join(__dirname, 'fixtures/levels/common/'),
     desktop = path.join(__dirname, 'fixtures/levels/desktop/');
 
 describe('Модуль Make.', function() {
+
+    afterEach(function() {
+        Object.keys(tmpAll).forEach(function(extname) {
+            if(fs.existsSync(tmpAll[extname])) {
+                fs.unlinkSync(tmpAll[extname]);
+            }
+        });
+    });
 
     it('Метод getBlocks', function(done) {
         new Make({
@@ -462,6 +475,40 @@ describe('Модуль Make.', function() {
                         path.join(desktop, 'button/button.ie.css')
                     ])
                 });
+                done();
+            });
+    });
+
+    it('Метод writeFilesByTech', function(done) {
+        var make = new Make({
+            outdir: tmp,
+            outname: 'all',
+            directories: [common, desktop],
+            extensions: ['.js', '.css', '.ie.css']
+        });
+        make.getBlocks()
+            .then(make.sort.bind(make))
+            .then(make.groupByTech.bind(make))
+            .then(make.writeFilesByTech.bind(make))
+            .then(function(content) {
+                var tmp = {
+                        js: fs.readFileSync(tmpAll.js, 'utf-8'),
+                        css: fs.readFileSync(tmpAll.css, 'utf-8'),
+                        iecss: fs.readFileSync(tmpAll.iecss, 'utf-8')
+                    },
+                    standard = {
+                        js: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.js'), 'utf-8'),
+                        css: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.css'), 'utf-8'),
+                        iecss: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.ie.css'), 'utf-8')
+                    };
+                assert.deepEqual(content, {
+                    '.js': standard.js,
+                    '.css': standard.css,
+                    '.ie.css': standard.iecss
+                });
+                assert.equal(tmp.js, standard.js);
+                assert.equal(tmp.css, standard.css);
+                assert.equal(tmp.iecss, standard.iecss);
                 done();
             });
     });
