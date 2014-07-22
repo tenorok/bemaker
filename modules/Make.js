@@ -15,7 +15,7 @@ const path = require('path'),
  * @property {string} outdir Директория для сохранения файлов
  * @property {string} outname Имя для сохраняемых файлов
  * @property {string[]} directories Директории для поиска блоков (уровни переопределения)
- * @property {string[]} extensions Расширения файлов к сборке
+ * @property {string[]} [extensions] Расширения файлов к сборке, по умолчанию собираются все найденные расширения
  * @property {string[]} [blocks] Блоки для сборки, по умолчанию собираются все блоки
  * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
@@ -74,21 +74,21 @@ const path = require('path'),
  */
 
 /**
- * Сгруппированные файлы блоков по технологиям.
+ * Сгруппированные файлы блоков по расширениям.
  *
  * Ключами являются расширения файлов.
  *
- * @typedef {{}} Make~groupsByTech
- * @property {Join} * Файлы блоков по технологии ключа
+ * @typedef {{}} Make~groupsByExtensions
+ * @property {Join} * Файлы блоков по расширению в ключе
  */
 
 /**
- * Содержимое файлов блоков по технологиям.
+ * Содержимое файлов блоков по расширениям.
  *
  * Ключами являются расширения файлов.
  *
- * @typedef {{}} Make~contentByTech
- * @property {Join} * Содержимое файлов блоков по технологии ключа
+ * @typedef {{}} Make~contentByExtensions
+ * @property {Join} * Содержимое файлов блоков по расширению в ключе
  */
 
 /**
@@ -156,12 +156,12 @@ Make.prototype = {
     },
 
     /**
-     * Сгруппировать файлы блоков по технологиям.
+     * Сгруппировать файлы блоков по расширениям.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @returns {Make~groupsByTech}
+     * @returns {Make~groupsByExtensions}
      */
-    groupByTech: function(blocks) {
+    groupByExtensions: function(blocks) {
         return blocks.reduce(function(groups, block) {
             block.levels.forEach(function(level) {
                 level.files.forEach(function(file) {
@@ -177,12 +177,12 @@ Make.prototype = {
     },
 
     /**
-     * Сохранить файлы по технологиям.
+     * Сохранить файлы по расширениям.
      *
-     * @param {Make~groupsByTech} groups Файлы блоков по технологиям
-     * @returns {Promise} Make~contentByTech
+     * @param {Make~groupsByExtensions} groups Файлы блоков по расширениям
+     * @returns {Promise} Make~contentByExtensions
      */
-    writeFilesByTech: function(groups) {
+    writeFilesByExtensions: function(groups) {
         var content = {};
         return Promise.all(Object.keys(groups).reduce(function(promises, extname) {
             return promises.concat(groups[extname].toString().then(function(joined) {

@@ -26,8 +26,7 @@ describe('Модуль Make.', function() {
 
     it('Метод getBlocks', function(done) {
         new Make({
-            directories: [common, desktop],
-            extensions: ['.js', '.css']
+            directories: [common, desktop]
         }).getBlocks().then(function(blocks) {
                 assert.deepEqual(blocks.get().sort(function(a, b) { return a.name < b.name }), [
                     {
@@ -233,7 +232,6 @@ describe('Модуль Make.', function() {
     it('Метод filter', function(done) {
         var make = new Make({
             directories: [common, desktop],
-            extensions: ['.js', '.css'],
             blocks: ['link', 'checkbox']
         });
         make.getBlocks().then(function(blocks) {
@@ -307,8 +305,7 @@ describe('Модуль Make.', function() {
 
     it('Метод sort', function(done) {
         var make = new Make({
-            directories: [common, desktop],
-            extensions: ['.js', '.css']
+            directories: [common, desktop]
         });
         make.getBlocks()
             .then(make.sort.bind(make))
@@ -514,14 +511,13 @@ describe('Модуль Make.', function() {
             });
     });
 
-    it('Метод groupByTech', function(done) {
+    it('Метод groupByExtensions', function(done) {
         var make = new Make({
-            directories: [common, desktop],
-            extensions: ['.js', '.css', '.ie.css']
+            directories: [common, desktop]
         });
         make.getBlocks()
             .then(make.sort.bind(make))
-            .then(make.groupByTech.bind(make))
+            .then(make.groupByExtensions.bind(make))
             .then(function(groups) {
                 assert.deepEqual(groups, {
                     '.js': new Join().addFiles([
@@ -554,17 +550,16 @@ describe('Модуль Make.', function() {
             });
     });
 
-    it('Метод writeFilesByTech', function(done) {
+    it('Метод writeFilesByExtensions', function(done) {
         var make = new Make({
             outdir: tmp,
             outname: 'all',
-            directories: [common, desktop],
-            extensions: ['.js', '.css', '.ie.css']
+            directories: [common, desktop]
         });
         make.getBlocks()
             .then(make.sort.bind(make))
-            .then(make.groupByTech.bind(make))
-            .then(make.writeFilesByTech.bind(make))
+            .then(make.groupByExtensions.bind(make))
+            .then(make.writeFilesByExtensions.bind(make))
             .then(function(content) {
                 var tmp = {
                         js: fs.readFileSync(tmpAll.js, 'utf-8'),
