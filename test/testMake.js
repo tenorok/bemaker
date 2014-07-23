@@ -550,6 +550,37 @@ describe('Модуль Make.', function() {
             });
     });
 
+    it('Метод groupByExtensions с указанной опцией extensions', function(done) {
+        var make = new Make({
+            directories: [common, desktop],
+            extensions: ['.css', '.ie.css']
+        });
+        make.getBlocks()
+            .then(make.sort.bind(make))
+            .then(make.groupByExtensions.bind(make))
+            .then(function(groups) {
+                assert.deepEqual(groups, {
+                    '.css': new Join().addFiles([
+                        path.join(common, 'under/under.css'),
+                        path.join(common, 'link/__blank.css'),
+                        path.join(common, 'checkbox/checkbox.css'),
+                        path.join(common, 'button/button.css'),
+                        path.join(common, 'button/__control.css'),
+                        path.join(desktop, 'button/__control/button__control.css'),
+                        path.join(common, 'input/input.css'),
+                        path.join(common, 'input/__control/__control.css'),
+                        path.join(common, 'select/select.css'),
+                        path.join(common, 'select/_mod_val/_mod_val.css'),
+                        path.join(desktop, 'popup/popup.css')
+                    ]),
+                    '.ie.css': new Join().addFiles([
+                        path.join(desktop, 'button/button.ie.css')
+                    ])
+                });
+                done();
+            });
+    });
+
     it('Метод writeFilesByExtensions', function(done) {
         var make = new Make({
             outdir: tmp,

@@ -167,13 +167,13 @@ Make.prototype = {
                 level.files.forEach(function(file) {
                     if(groups[file.extname]) {
                         groups[file.extname].addFiles([file.path]);
-                    } else {
+                    } else if(!this._config.extensions || ~this._config.extensions.indexOf(file.extname)) {
                         groups[file.extname] = new Join([{ file: file.path }]);
                     }
-                });
-            });
+                }, this);
+            }, this);
             return groups;
-        }, {});
+        }.bind(this), {});
     },
 
     /**
