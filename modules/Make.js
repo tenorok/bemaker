@@ -114,6 +114,20 @@ function Make(config) {
 Make.prototype = {
 
     /**
+     * Собрать файлы.
+     *
+     * @returns {Promise} Make~contentByExtensions
+     */
+    build: function() {
+        return this.getBlocks()
+            .then(function(blocks) {
+                return this.sort(this.filter(blocks));
+            }.bind(this))
+            .then(this.groupByExtensions.bind(this))
+            .then(this.writeFilesByExtensions.bind(this))
+    },
+
+    /**
      * Получить список блоков со всех уровней.
      *
      * @returns {Promise} Make~poolBlocks

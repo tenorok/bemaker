@@ -11,6 +11,11 @@ const fs = require('fs'),
         css: path.join(__dirname, 'fixtures/tmp/all.css'),
         iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css')
     },
+    standardAll = {
+        js: path.join(__dirname, 'fixtures/levels/build/all.js'),
+        css: path.join(__dirname, 'fixtures/levels/build/all.css'),
+        iecss: path.join(__dirname, 'fixtures/levels/build/all.ie.css')
+    },
     common = path.join(__dirname, 'fixtures/levels/common/'),
     desktop = path.join(__dirname, 'fixtures/levels/desktop/');
 
@@ -25,10 +30,19 @@ describe('Модуль Make.', function() {
     });
 
     it('Метод getBlocks', function(done) {
+        function sort(blocks) {
+            blocks.forEach(function(block) {
+                if(block.require) {
+                    block.require.sort();
+                }
+            });
+            return blocks.sort(function(a, b) { return a.name < b.name });
+        }
+
         new Make({
             directories: [common, desktop]
         }).getBlocks().then(function(blocks) {
-                assert.deepEqual(blocks.get().sort(function(a, b) { return a.name < b.name }), [
+                assert.deepEqual(sort(blocks.get()), sort([
                     {
                         name: 'button',
                         levels: [
@@ -224,7 +238,7 @@ describe('Модуль Make.', function() {
                         ],
                         require: ['button', 'input', 'select']
                     }
-                ].sort(function(a, b) { return a.name < b.name }));
+                ]));
                 done();
             });
     });
@@ -598,9 +612,9 @@ describe('Модуль Make.', function() {
                         iecss: fs.readFileSync(tmpAll.iecss, 'utf-8')
                     },
                     standard = {
-                        js: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.js'), 'utf-8'),
-                        css: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.css'), 'utf-8'),
-                        iecss: fs.readFileSync(path.join(__dirname, 'fixtures/levels/build/all.ie.css'), 'utf-8')
+                        js: fs.readFileSync(standardAll.js, 'utf-8'),
+                        css: fs.readFileSync(standardAll.css, 'utf-8'),
+                        iecss: fs.readFileSync(standardAll.iecss, 'utf-8')
                     };
                 assert.deepEqual(content, {
                     '.js': standard.js,
@@ -612,6 +626,26 @@ describe('Модуль Make.', function() {
                 assert.equal(tmp.iecss, standard.iecss);
                 done();
             });
+    });
+
+    it('Метод build', function(done) {
+        var make = new Make({
+            outdir: tmp,
+            outname: 'all',
+            directories: [common, desktop],
+            extensions: ['.js', '.css']
+        });
+        make.build().then(function() {
+            assert.equal(
+                fs.readFileSync(tmpAll.js, 'utf-8'),
+                fs.readFileSync(standardAll.js, 'utf-8')
+            );
+            assert.equal(
+                fs.readFileSync(tmpAll.css, 'utf-8'),
+                fs.readFileSync(standardAll.css, 'utf-8')
+            );
+            done();
+        });
     });
 
 });
