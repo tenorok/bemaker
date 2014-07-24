@@ -197,6 +197,36 @@ Pool.prototype = {
     },
 
     /**
+     * Колбек вызывается для каждого модуля в методе filter.
+     *
+     * @callback Pool~filterCallback
+     * @this Pool
+     * @param {Pool~Module} module Модуль
+     * @param {number} index Индекс модуля
+     */
+
+    /**
+     * Отфильтровать модули по их именам, индексам или с помощью колбека.
+     *
+     * @param {*[]|Pool~filterCallback} desire Список имён и индексов или колбек
+     * @returns {Pool}
+     */
+    filter: function(desire) {
+        if(typeof desire !== 'function') {
+            var names = desire.map(function(nameOrIndex) {
+                return typeof nameOrIndex === 'number' ? this.nameOf(nameOrIndex) : nameOrIndex;
+            }, this);
+        }
+
+        this._modules = this._modules.filter(function(module, index) {
+            return names
+                ? ~names.indexOf(module.name)
+                : desire.call(this, module, index);
+        }, this);
+        return this;
+    },
+
+    /**
      * Получить количество модулей.
      *
      * @returns {number}

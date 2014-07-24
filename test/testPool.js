@@ -110,6 +110,67 @@ describe('Модуль Pool.', function() {
 
     });
 
+    describe('Метод filter.', function() {
+
+        it('Отфильтровать модули по именам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).filter(['a', 'c', 'd']).get(), [
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'd' }
+            ]);
+        });
+
+        it('Отфильтровать модули по индексам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).filter([1, 3, 4]).get(), [
+                { name: 'b' },
+                { name: 'd' },
+                { name: 'e' }
+            ]);
+        });
+
+        it('Отфильтровать модули по именам и индексам', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).filter(['a', 2, 'e']).get(), [
+                { name: 'a' },
+                { name: 'c' },
+                { name: 'e' }
+            ]);
+        });
+
+        it('Отфильтровать модули по результату колбека', function() {
+            assert.deepEqual(new Pool([
+                { name: 'a' },
+                { name: 'b' },
+                { name: 'c' },
+                { name: 'd' },
+                { name: 'e' }
+            ]).filter(function(module, index) {
+                    return module.name === 'b' || index === 3;
+                }).get(), [
+                { name: 'b' },
+                { name: 'd' }
+            ]);
+        });
+
+    });
+
     describe('Метод size.', function() {
 
         it('Получить количество модулей', function() {

@@ -72,6 +72,39 @@ Depend.prototype = {
         }, this);
 
         return sorted.get();
+    },
+
+    /**
+     * Отфильтровать модули для заданного модуля
+     * или нескольких модулей по зависимостям.
+     *
+     * @param {string|string[]} name Имя заданного модуля или нескольких модулей
+     * @returns {Depend~Module[]}
+     */
+    filter: function(name) {
+        return this._modules.filter(
+            typeof name === 'string'
+                ? this._filter(name, [])
+                : name.reduce(function(filteredNames, name) {
+                    return filteredNames.concat(this._filter(name, []));
+                }.bind(this), [])
+        ).get();
+    },
+
+    /**
+     * Рекурсивно получить имена отфильтрованных модулей по зависимостям.
+     *
+     * @private
+     * @param {string} name Имя заданного модуля
+     * @param {string[]} filteredNames Имена отфильтрованных модулей
+     * @returns {string[]}
+     */
+    _filter: function(name, filteredNames) {
+        filteredNames.push(this._modules.get(name).name);
+        (this._modules.get(name).require || []).forEach(function(requireName) {
+            this._filter(requireName, filteredNames);
+        }, this);
+        return filteredNames;
     }
 
 };
