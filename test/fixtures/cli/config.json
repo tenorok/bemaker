@@ -1,0 +1,4 @@
+{
+    "levels": ["common", "desktop"],
+    "outname": "all"
+}

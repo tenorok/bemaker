@@ -23,6 +23,14 @@ function Cli() {
      * @type {string}
      */
     this._packagePath = '';
+
+    /**
+     * Относительный путь до конфигурационного JSON-файла.
+     *
+     * @private
+     * @type {string}
+     */
+    this._configPath = '';
 }
 
 Cli.prototype = {
@@ -32,7 +40,7 @@ Cli.prototype = {
      * Получить содержимое файла.
      *
      * @param {string} [packagePath] Абсолютный путь
-     * @returns {{}}
+     * @returns {Cli|{}}
      */
     package: function(packagePath) {
         if(packagePath) {
@@ -52,7 +60,7 @@ Cli.prototype = {
      * попытка получить версию из JSON-файла с информацией по пакету.
      *
      * @param {string} [version] Версия
-     * @returns {string}
+     * @returns {Cli|string}
      */
     version: function(version) {
         if(version) {
@@ -61,13 +69,32 @@ Cli.prototype = {
         }
 
         return this._version || this.package().version;
+    },
+
+    /**
+     * Установить относительный путь до конфигурационного JSON-файла.
+     * Получить содержимое файла.
+     *
+     * @param {string} [configPath] Относительный путь
+     * @returns {Cli|{}}
+     */
+    config: function(configPath) {
+        if(configPath) {
+            this._configPath = configPath;
+            return this;
+        }
+
+        return fs.existsSync(this._configPath)
+            ? JSON.parse(fs.readFileSync(Cli.resolveAbsolutePath(this._configPath), 'utf-8'))
+            : {};
     }
 
 };
 
 /**
  * Получить абсолютный путь из относительного
- * или массив абсолютных путей из массива относительных.
+ * или массив абсолютных путей из массива относительных
+ * относительно текущей рабочей директории.
  *
  * @param {string|string[]} relativePath Относительный путь или массив путей
  * @returns {string|string[]}

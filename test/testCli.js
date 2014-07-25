@@ -47,4 +47,19 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод config.', function() {
+
+        it('Установка и получение', function() {
+            assert.deepEqual(new Cli().config('test/fixtures/cli/config.json').config(), {
+                levels: ['common', 'desktop'],
+                outname: 'all'
+            });
+        });
+
+        it('Получение несуществующего конфига', function() {
+            assert.deepEqual(new Cli().config(), {});
+        });
+
+    });
+
 });
