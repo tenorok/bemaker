@@ -7,13 +7,13 @@ describe('Модуль Cli.', function() {
     describe('Метод resolveAbsolutePath.', function() {
 
         it('Один путь', function() {
-            assert.equal(Cli.resolveAbsolutePath('/test/fixtures/'), path.join(__dirname, '../test/fixtures/'));
+            assert.equal(Cli.resolveAbsolutePath('test/fixtures'), path.join(__dirname, '../test/fixtures'));
         });
 
         it('Несколько путей', function() {
             assert.deepEqual(
-                Cli.resolveAbsolutePath(['/test/1/', '/test/2/']),
-                [path.join(__dirname, '../test/1/'), path.join(__dirname, '../test/2/')]
+                Cli.resolveAbsolutePath(['test/1', 'test/2']),
+                [path.join(__dirname, '../test/1'), path.join(__dirname, '../test/2')]
             );
         });
 

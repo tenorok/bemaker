@@ -102,9 +102,9 @@ Cli.prototype = {
 Cli.resolveAbsolutePath = function(relativePath) {
     return Array.isArray(relativePath)
         ? relativePath.map(function(relativePath) {
-            return path.join(process.cwd(), relativePath);
+            return path.resolve(process.cwd(), relativePath);
         })
-        : path.join(process.cwd(), relativePath);
+        : path.resolve(process.cwd(), relativePath);
 };
 
 module.exports = Cli;
