@@ -62,4 +62,29 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод resolveVerboseAliases.', function() {
+
+        it('Развернуть стандартные соответствия', function() {
+            assert.deepEqual(new Cli().resolveVerboseAliases('l,i,e'), {
+                log: console.log,
+                info: console.info,
+                error: console.error
+            });
+        });
+
+        it('Изменить и развернуть соответствия', function() {
+            var cli = new Cli();
+            cli.verboseAliases = {
+                t: { time: console.time },
+                te: { timeEnd: console.timeEnd },
+                a: { assert: console.assert }
+            };
+            assert.deepEqual(cli.resolveVerboseAliases('t,te'), {
+                time: console.time,
+                timeEnd: console.timeEnd
+            });
+        });
+
+    });
+
 });

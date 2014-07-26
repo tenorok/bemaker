@@ -1,5 +1,6 @@
 const path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    _ = require('lodash');
 
 /**
  * Модуль для упрощения написания CLI.
@@ -87,6 +88,33 @@ Cli.prototype = {
         return fs.existsSync(this._configPath)
             ? JSON.parse(fs.readFileSync(Cli.resolveAbsolutePath(this._configPath), 'utf-8'))
             : {};
+    },
+
+    /**
+     * Соответствие сокращённых типов сообщений функциям вывода.
+     *
+     * @type {{}}
+     */
+    verboseAliases: {
+        l: { log: console.log },
+        i: { info: console.info },
+        w: { warn: console.warn },
+        e: { error: console.error }
+    },
+
+    /**
+     * Развернуть сокращённые типы сообщений в функции вывода.
+     *
+     * Результат работы метода соответствует первому
+     * аргументу конструктора модуля `Log`.
+     *
+     * @param {string} verbose Сокращённые типы сообщений, разделённые запятой
+     * @returns {{}}
+     */
+    resolveVerboseAliases: function(verbose) {
+        return verbose.split(',').reduce(function(out, alias) {
+            return _.extend(out, this.verboseAliases[alias]);
+        }.bind(this), {});
     }
 
 };
