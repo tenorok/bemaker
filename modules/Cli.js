@@ -1,6 +1,7 @@
 const path = require('path'),
     fs = require('fs'),
-    _ = require('lodash');
+    _ = require('lodash'),
+    commander = require('commander');
 
 /**
  * Модуль для упрощения написания CLI.
@@ -32,6 +33,14 @@ function Cli() {
      * @type {string}
      */
     this._configPath = '';
+
+    /**
+     * Экземпляр Commander.
+     *
+     * @private
+     * @type {Command}
+     */
+    this._commander = new commander.Command();
 }
 
 Cli.prototype = {
@@ -115,6 +124,24 @@ Cli.prototype = {
         return verbose.split(',').reduce(function(out, alias) {
             return _.extend(out, this.verboseAliases[alias]);
         }.bind(this), {});
+    },
+
+    /**
+     * Установить/получить экземпляр Commander.
+     *
+     * @param {Command} [commander] Экземпляр commander
+     * @returns {Cli|Command}
+     */
+    commander: function(commander) {
+        if(commander) {
+            this._commander = commander;
+        }
+
+        if(!this._commander.version()) {
+            this._commander.version(this.version());
+        }
+
+        return !commander ? this._commander : this;
     }
 
 };

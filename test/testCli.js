@@ -1,5 +1,6 @@
 const path = require('path'),
     assert = require('chai').assert,
+    commander = require('commander'),
     Cli = require('../modules/Cli');
 
 describe('Модуль Cli.', function() {
@@ -83,6 +84,27 @@ describe('Модуль Cli.', function() {
                 time: console.time,
                 timeEnd: console.timeEnd
             });
+        });
+
+    });
+
+    describe('Работа с commander.', function() {
+
+        it('Получить стандартный экземпляр Commander', function() {
+            assert.isTrue(new Cli().commander() instanceof commander.Command);
+        });
+
+        it('Версия указывается автоматически', function() {
+            assert.equal(new Cli()
+                .package(path.join(__dirname, '/fixtures/cli/package.json'))
+                .commander().version(), '5.0.2');
+        });
+
+        it('Версия не должна указываться автоматически', function() {
+            assert.equal(new Cli()
+                .package(path.join(__dirname, '/fixtures/cli/package.json'))
+                .commander(new commander.Command().version('0.1.0'))
+                .commander().version(), '0.1.0');
         });
 
     });
