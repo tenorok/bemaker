@@ -4,11 +4,22 @@ const path = require('path'),
     commander = require('commander');
 
 /**
+ * Стандартные опции Commander.
+ *
+ * @typedef {{}} Cli~commanderDefaultOptions
+ * @property {{}} * Имя опции
+ * @property {string} *.flags Флаги
+ * @property {string} *.description Описание
+ */
+
+/**
  * Модуль для упрощения написания CLI.
  *
  * @constructor
+ * @param {{}} [options] Опции инициализации
+ * @param {Cli~commanderDefaultOptions} [options.commanderDefaultOptions] Стандартные опции Commander
  */
-function Cli() {
+function Cli(options) {
 
     /**
      * Версия.
@@ -34,13 +45,19 @@ function Cli() {
      */
     this._configPath = '';
 
+    options = options || {};
+
+    if(options.commanderDefaultOptions) {
+        this.commanderDefaultOptions = options.commanderDefaultOptions;
+    }
+
     /**
      * Экземпляр Commander.
      *
      * @private
      * @type {Command}
      */
-    this._commander = new commander.Command();
+    this._commander = this.commander(new commander.Command()).commander();
 }
 
 Cli.prototype = {
@@ -141,7 +158,28 @@ Cli.prototype = {
             this._commander.version(this.version());
         }
 
+        Object.keys(this.commanderDefaultOptions).forEach(function(option) {
+            if(!this.getCommanderOption(option)) {
+                this._commander.option(
+                    this.commanderDefaultOptions[option].flags,
+                    this.commanderDefaultOptions[option].description
+                );
+            }
+        }, this);
+
         return !commander ? this._commander : this;
+    },
+
+    /**
+     * Стандартные опции Commander.
+     *
+     * @type {Cli~commanderDefaultOptions}
+     */
+    commanderDefaultOptions: {
+        verbose: {
+            flags: '-v, --verbose <modes>',
+            description: 'l - log, i - info, w - warn, e - error, comma delimited'
+        }
     },
 
     /**

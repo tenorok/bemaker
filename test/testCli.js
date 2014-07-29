@@ -115,6 +115,21 @@ describe('Модуль Cli.', function() {
             );
         });
 
+        it('Опция verbose указывается автоматически', function() {
+            var cli = new Cli();
+            assert.deepEqual(
+                cli.getCommanderOption('verbose'),
+                new commander.Option(
+                    cli.commanderDefaultOptions.verbose.flags,
+                    cli.commanderDefaultOptions.verbose.description
+                )
+            );
+        });
+
+        it('Отмена автоматического указания опций', function() {
+            assert.isUndefined(new Cli({ commanderDefaultOptions: {} }).getCommanderOption('verbose'));
+        });
+
     });
 
 });
