@@ -107,6 +107,14 @@ describe('Модуль Cli.', function() {
                 .commander().version(), '0.1.0');
         });
 
+        it('Метод getCommanderOption', function() {
+            assert.isUndefined(new Cli().getCommanderOption('option'));
+            assert.deepEqual(
+                new Cli().commander(new commander.Command().option('-o, --option')).getCommanderOption('option'),
+                new commander.Option('-o, --option')
+            );
+        });
+
     });
 
 });

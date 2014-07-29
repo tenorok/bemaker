@@ -142,6 +142,20 @@ Cli.prototype = {
         }
 
         return !commander ? this._commander : this;
+    },
+
+    /**
+     * Получить опцию Commander.
+     *
+     * @param {string} option Полное имя опции без первых минусов
+     * @returns {Option|undefined}
+     */
+    getCommanderOption: function(option) {
+        for(var i = 0; i < this._commander.options.length; i++) {
+            if(this._commander.options[i].long === '--' + option) {
+                return this._commander.options[i];
+            }
+        }
     }
 
 };
