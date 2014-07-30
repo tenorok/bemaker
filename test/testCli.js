@@ -115,19 +115,92 @@ describe('Модуль Cli.', function() {
             );
         });
 
+        it('Метод setCommanderOption', function() {
+            assert.deepEqual(
+                new Cli().setCommanderOption({
+                    flags: '-p, --postfix <postfix>',
+                    description: 'postfix to find files'
+                }).getCommanderOption('postfix'),
+                new commander.Option('-p, --postfix <postfix>', 'postfix to find files')
+            );
+        });
+
+        it('Метод removeCommanderOption', function() {
+            assert.isUndefined(new Cli().commander(new commander.Command().option('-o, --option'))
+                .removeCommanderOption('option')
+                .getCommanderOption('option')
+            );
+        });
+
+        it('Метод setCommanderOption должен переопределять стандартные опции', function() {
+            assert.deepEqual(
+                new Cli().setCommanderOption({
+                    flags: '-v, --verbose <param>',
+                    description: 'other verbose'
+                }).getCommanderOption('verbose'),
+                new commander.Option('-v, --verbose <param>', 'other verbose')
+            );
+        });
+
+        it('Метод defaultCommanderOptions', function() {
+            assert.deepEqual(
+                new Cli().defaultCommanderOptions({ block: { flags: '-b, --block <name>' }}).defaultCommanderOptions(),
+                { block: { flags: '-b, --block <name>' }}
+            );
+        });
+
+        it('Метод isDefaultCommanderOption', function() {
+            assert.isTrue(new Cli().isDefaultCommanderOption('verbose'));
+            assert.isFalse(new Cli()
+                .setCommanderOption({ flags: '-v, --verbose', description: 'other verbose' })
+                .isDefaultCommanderOption('verbose')
+            );
+        });
+
         it('Опция verbose указывается автоматически', function() {
             var cli = new Cli();
             assert.deepEqual(
                 cli.getCommanderOption('verbose'),
                 new commander.Option(
-                    cli.commanderDefaultOptions.verbose.flags,
-                    cli.commanderDefaultOptions.verbose.description
+                    cli.defaultCommanderOptions().verbose.flags,
+                    cli.defaultCommanderOptions().verbose.description
                 )
             );
         });
 
+        it('Опция verbose указана вручную', function() {
+            var cli = new Cli().commander(new commander.Command().option('-v, --verbose', 'another verbose'));
+            assert.deepEqual(
+                cli.getCommanderOption('verbose'),
+                new commander.Option('-v, --verbose', 'another verbose')
+            );
+        });
+
         it('Отмена автоматического указания опций', function() {
-            assert.isUndefined(new Cli({ commanderDefaultOptions: {} }).getCommanderOption('verbose'));
+            assert.isUndefined(new Cli({ defaultCommanderOptions: {} }).getCommanderOption('verbose'));
+        });
+
+        it('Опция config указывается автоматически', function() {
+            var cli = new Cli();
+            assert.deepEqual(
+                cli.getCommanderOption('config'),
+                new commander.Option(
+                    cli.defaultCommanderOptions().config.flags,
+                    cli.defaultCommanderOptions().config.description
+                )
+            );
+        });
+
+        it('Опция config указывается автоматически с заданным конфигом', function() {
+            assert.equal(new Cli()
+                .config('config.json')
+                .commander().parse(['bemaker', 'make']).config, 'config.json');
+        });
+
+        it('Опция config переопределяется в команде', function() {
+            assert.equal(new Cli()
+                .config('config.json')
+                .commander().parse(['bemaker', 'make', '--config', 'my.json']).config, 'my.json');
         });
 
     });

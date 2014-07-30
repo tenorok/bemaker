@@ -4,12 +4,19 @@ const path = require('path'),
     commander = require('commander');
 
 /**
+ * Опция Commander.
+ *
+ * @typedef {{}} Cli~commanderOption
+ * @property {string} flags Флаги
+ * @property {string} [description] Описание
+ * @property {*} [default] Стандартное значение
+ */
+
+/**
  * Стандартные опции Commander.
  *
- * @typedef {{}} Cli~commanderDefaultOptions
- * @property {{}} * Имя опции
- * @property {string} *.flags Флаги
- * @property {string} *.description Описание
+ * @typedef {{}} Cli~defaultCommanderOptions
+ * @property {Cli~commanderOption} * Имя опции
  */
 
 /**
@@ -17,9 +24,11 @@ const path = require('path'),
  *
  * @constructor
  * @param {{}} [options] Опции инициализации
- * @param {Cli~commanderDefaultOptions} [options.commanderDefaultOptions] Стандартные опции Commander
+ * @param {Cli~defaultCommanderOptions} [options.defaultCommanderOptions] Стандартные опции Commander
  */
 function Cli(options) {
+
+    options = options || {};
 
     /**
      * Версия.
@@ -45,11 +54,15 @@ function Cli(options) {
      */
     this._configPath = '';
 
-    options = options || {};
+    /**
+     * Стандартные опции Commander.
+     *
+     * @private
+     * @type {Cli~defaultCommanderOptions}
+     */
+    this._defaultCommanderOptions;
 
-    if(options.commanderDefaultOptions) {
-        this.commanderDefaultOptions = options.commanderDefaultOptions;
-    }
+    this.defaultCommanderOptions(options.defaultCommanderOptions);
 
     /**
      * Экземпляр Commander.
@@ -108,6 +121,11 @@ Cli.prototype = {
     config: function(configPath) {
         if(configPath) {
             this._configPath = configPath;
+
+            if(this.isDefaultCommanderOption('config')) {
+                this.setCommanderOption(this.defaultCommanderOptions().config);
+            }
+
             return this;
         }
 
@@ -152,48 +170,112 @@ Cli.prototype = {
     commander: function(commander) {
         if(commander) {
             this._commander = commander;
+            return this;
         }
 
         if(!this._commander.version()) {
-            this._commander.version(this.version());
+            var version = this.version();
+            if(version) {
+                this._commander.version(version);
+            }
         }
 
-        Object.keys(this.commanderDefaultOptions).forEach(function(option) {
+        var defaultCommanderOptions = this.defaultCommanderOptions();
+        Object.keys(defaultCommanderOptions).forEach(function(option) {
             if(!this.getCommanderOption(option)) {
                 this._commander.option(
-                    this.commanderDefaultOptions[option].flags,
-                    this.commanderDefaultOptions[option].description
+                    defaultCommanderOptions[option].flags,
+                    defaultCommanderOptions[option].description,
+                    defaultCommanderOptions[option].default
                 );
             }
         }, this);
 
-        return !commander ? this._commander : this;
+        return this._commander;
     },
 
     /**
-     * Стандартные опции Commander.
+     * Получить/установить стандартные опции Commander.
      *
-     * @type {Cli~commanderDefaultOptions}
+     * @param {Cli~defaultCommanderOptions} [options] Опции
+     * @returns {Cli|Cli~defaultCommanderOptions}
      */
-    commanderDefaultOptions: {
-        verbose: {
-            flags: '-v, --verbose <modes>',
-            description: 'l - log, i - info, w - warn, e - error, comma delimited'
+    defaultCommanderOptions: function(options) {
+        if(options) {
+            this._defaultCommanderOptions = options;
+            return this;
         }
+
+        return this._defaultCommanderOptions || {
+            verbose: {
+                flags: '-v, --verbose <modes>',
+                description: 'l - log, i - info, w - warn, e - error, comma delimited'
+            },
+            config: {
+                flags: '-c, --config <file>',
+                description: 'json format config',
+                default: this._configPath || undefined
+            }
+        };
     },
 
     /**
      * Получить опцию Commander.
      *
-     * @param {string} option Полное имя опции без первых минусов
+     * @param {string} optionName Полное имя опции без первых минусов
      * @returns {Option|undefined}
      */
-    getCommanderOption: function(option) {
+    getCommanderOption: function(optionName) {
         for(var i = 0; i < this._commander.options.length; i++) {
-            if(this._commander.options[i].long === '--' + option) {
+            if(this._commander.options[i].long === '--' + optionName) {
                 return this._commander.options[i];
             }
         }
+    },
+
+    /**
+     * Установить опцию Commander.
+     *
+     * @param {Cli~commanderOption} option Опция
+     * @returns {Cli}
+     */
+    setCommanderOption: function(option) {
+        this.removeCommanderOption(new commander.Option(option.flags, option.description).long.slice(2));
+        this._commander.option(
+            option.flags,
+            option.description,
+            option.default
+        );
+        return this;
+    },
+
+    /**
+     * Удалить опцию Commander.
+     *
+     * @param {string} optionName Полное имя опции без первых минусов
+     * @returns {Cli}
+     */
+    removeCommanderOption: function(optionName) {
+        for(var i = 0; i < this._commander.options.length; i++) {
+            if(this._commander.options[i].long === '--' + optionName) {
+                this._commander.options.splice(i, 1);
+            }
+        }
+        return this;
+    },
+
+    /**
+     * Проверить опцию Commander на стандартно заданную.
+     *
+     * @param {string} optionName Полное имя опции без первых минусов
+     * @returns {boolean}
+     */
+    isDefaultCommanderOption: function(optionName) {
+        var option = this.getCommanderOption(optionName),
+            defaultOption = this.defaultCommanderOptions()[optionName];
+
+        return option.flags === defaultOption.flags &&
+            option.description === defaultOption.description;
     }
 
 };
