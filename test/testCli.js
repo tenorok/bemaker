@@ -203,6 +203,12 @@ describe('Модуль Cli.', function() {
                 .commander().parse(['bemaker', 'make', '--config', 'my.json']).config, 'my.json');
         });
 
+        it('Метод parse вызывается автоматически', function() {
+            var cmd = new Cli().commander();
+            assert.isTrue(cmd.hasOwnProperty('rawArgs'));
+            assert.isTrue(cmd.hasOwnProperty('args'));
+        });
+
     });
 
 });

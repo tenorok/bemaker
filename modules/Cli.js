@@ -162,7 +162,8 @@ Cli.prototype = {
     },
 
     /**
-     * Установить/получить экземпляр Commander.
+     * Установить/получить экземпляр Commander
+     * с выполненным парсингом process.argv.
      *
      * @param {Command} [commander] Экземпляр commander
      * @returns {Cli|Command}
@@ -191,7 +192,7 @@ Cli.prototype = {
             }
         }, this);
 
-        return this._commander;
+        return this._commander.parse(process.argv);
     },
 
     /**
