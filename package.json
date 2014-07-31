@@ -30,6 +30,9 @@
         "chai": "~1.9.1",
         "rimraf": "~2.2.8"
     },
+    "bin": {
+        "bemaker": "./bin/bemaker"
+    },
     "scripts": {
         "test": "./node_modules/.bin/mocha test/"
     }
