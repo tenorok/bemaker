@@ -19,7 +19,8 @@
         "comment-parser": "~0.1.2",
         "lodash": "~2.4.1",
         "cli-color": "~0.3.2",
-        "moment": "~2.7.0"
+        "moment": "~2.7.0",
+        "commander": "~2.3.0"
     },
     "devDependencies": {
         "git-hooks": "~0.0.6",
