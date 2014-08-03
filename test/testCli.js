@@ -107,6 +107,12 @@ describe('Модуль Cli.', function() {
                 .commander().version(), '0.1.0');
         });
 
+        it('Метод parse', function() {
+            var cmd = new Cli().parse().commander();
+            assert.isTrue(cmd.hasOwnProperty('rawArgs'));
+            assert.isTrue(cmd.hasOwnProperty('args'));
+        });
+
         it('Метод getCommanderOption', function() {
             assert.isUndefined(new Cli().getCommanderOption('option'));
             assert.deepEqual(
@@ -201,12 +207,6 @@ describe('Модуль Cli.', function() {
             assert.equal(new Cli()
                 .config('config.json')
                 .commander().parse(['bemaker', 'make', '--config', 'my.json']).config, 'my.json');
-        });
-
-        it('Метод parse вызывается автоматически', function() {
-            var cmd = new Cli().commander();
-            assert.isTrue(cmd.hasOwnProperty('rawArgs'));
-            assert.isTrue(cmd.hasOwnProperty('args'));
         });
 
     });

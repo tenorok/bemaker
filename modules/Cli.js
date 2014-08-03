@@ -192,7 +192,18 @@ Cli.prototype = {
             }
         }, this);
 
-        return this._commander.parse(process.argv);
+        return this._commander;
+    },
+
+    /**
+     * Пропарсить команду.
+     *
+     * @param {[]} [args=process.argv] Аргументы
+     * @returns {Cli}
+     */
+    parse: function(args) {
+        this._commander.parse(args || process.argv);
+        return this;
     },
 
     /**
