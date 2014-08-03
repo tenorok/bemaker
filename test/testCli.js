@@ -31,11 +31,11 @@ describe('Модуль Cli.', function() {
         });
 
         it('Пуста строка', function() {
-            assert.deepEqual(Cli.split(''), []);
+            assert.isUndefined(Cli.split(''));
         });
 
         it('Незаданное значение', function() {
-            assert.deepEqual(Cli.split(undefined), []);
+            assert.isUndefined(Cli.split(undefined));
         });
 
     });

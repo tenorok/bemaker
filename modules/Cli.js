@@ -313,10 +313,10 @@ Cli.resolveAbsolutePath = function(relativePath) {
  *
  * @param {string} string Строка
  * @param {string} [separator=,] Разделитель
- * @returns {string[]}
+ * @returns {string[]|undefined}
  */
 Cli.split = function(string, separator) {
-    if(!string) return [];
+    if(!string) return;
     return string.split(separator || ',');
 };
 
