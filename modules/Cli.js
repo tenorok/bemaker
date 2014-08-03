@@ -308,4 +308,16 @@ Cli.resolveAbsolutePath = function(relativePath) {
         : path.resolve(process.cwd(), relativePath);
 };
 
+/**
+ * Разбить строку в массив по разделителю.
+ *
+ * @param {string} string Строка
+ * @param {string} [separator=,] Разделитель
+ * @returns {string[]}
+ */
+Cli.split = function(string, separator) {
+    if(!string) return [];
+    return string.split(separator || ',');
+};
+
 module.exports = Cli;

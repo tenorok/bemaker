@@ -20,6 +20,26 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод split.', function() {
+
+        it('Обычная строка', function() {
+            assert.deepEqual(Cli.split('dir1,dir2'), ['dir1', 'dir2']);
+        });
+
+        it('Изменённый разделитель', function() {
+            assert.deepEqual(Cli.split('dir1:dir2', ':'), ['dir1', 'dir2']);
+        });
+
+        it('Пуста строка', function() {
+            assert.deepEqual(Cli.split(''), []);
+        });
+
+        it('Незаданное значение', function() {
+            assert.deepEqual(Cli.split(undefined), []);
+        });
+
+    });
+
     describe('Метод package.', function() {
 
         it('Установка и получение', function() {
