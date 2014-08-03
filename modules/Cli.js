@@ -225,7 +225,7 @@ Cli.prototype = {
             },
             config: {
                 flags: '-c, --config <file>',
-                description: 'json format config',
+                description: 'config in json format',
                 default: this._configPath || undefined
             }
         };
