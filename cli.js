@@ -40,9 +40,9 @@ commander
     .action(function() {
         var config = cli.config(commander.config).config();
         new Make({
-            outdir: config.outdir || commander.outdir || '.',
+            outdir: Cli.resolveAbsolutePath(config.outdir || commander.outdir || '.'),
             outname: config.outname || commander.outname || '',
-            directories: config.directories || Cli.split(commander.directories),
+            directories: Cli.resolveAbsolutePath(config.directories || Cli.split(commander.directories) || []),
             extensions: config.extensions || Cli.split(commander.extensions),
             blocks: config.blocks || Cli.split(commander.blocks),
             dependext: config.dependext || commander.dependext,
