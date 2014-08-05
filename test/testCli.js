@@ -20,6 +20,21 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод resolveRelativePath.', function() {
+
+        it('Один путь', function() {
+            assert.equal(Cli.resolveRelativePath(path.join(__dirname, '../test/fixtures')), 'test/fixtures');
+        });
+
+        it('Несколько путей', function() {
+            assert.deepEqual(
+                Cli.resolveRelativePath([path.join(__dirname, '../test/1'), path.join(__dirname, '../test/2')]),
+                ['test/1', 'test/2']
+            );
+        });
+
+    });
+
     describe('Метод split.', function() {
 
         it('Обычная строка', function() {

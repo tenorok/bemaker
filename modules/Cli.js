@@ -293,6 +293,22 @@ Cli.prototype = {
 };
 
 /**
+ * Получить резолв пути или массива путей.
+ *
+ * @private
+ * @param {string} method Метод модуля `path` для резолва путей
+ * @param {string|string[]} resolvePath Путь или массив путей для резолва
+ * @returns {string|string[]}
+ */
+function resolveCwdPath(method, resolvePath) {
+    return Array.isArray(resolvePath)
+        ? resolvePath.map(function(resolvePath) {
+            return path[method](process.cwd(), resolvePath);
+        })
+        : path[method](process.cwd(), resolvePath);
+}
+
+/**
  * Получить абсолютный путь из относительного
  * или массив абсолютных путей из массива относительных
  * относительно текущей рабочей директории.
@@ -301,11 +317,19 @@ Cli.prototype = {
  * @returns {string|string[]}
  */
 Cli.resolveAbsolutePath = function(relativePath) {
-    return Array.isArray(relativePath)
-        ? relativePath.map(function(relativePath) {
-            return path.resolve(process.cwd(), relativePath);
-        })
-        : path.resolve(process.cwd(), relativePath);
+    return resolveCwdPath('resolve', relativePath);
+};
+
+/**
+ * Получить относительный путь из абсолютного
+ * или массив относительных путей из массива абсолютных
+ * относительно текущей рабочей директории.
+ *
+ * @param {string|string[]} absolutePath Абсолютный путь или массив путей
+ * @returns {string|string[]}
+ */
+Cli.resolveRelativePath = function(absolutePath) {
+    return resolveCwdPath('relative', absolutePath);
 };
 
 /**
