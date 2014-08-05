@@ -1,7 +1,10 @@
 const path = require('path'),
 
+    moment = require('moment'),
+
     Cli = require('./modules/Cli'),
-    Make = require('./modules/Make');
+    Make = require('./modules/Make'),
+    Log = require('./modules/Log');
 
 var defaultConfigFile = 'bemaker.json',
 
@@ -18,6 +21,8 @@ var defaultConfigFile = 'bemaker.json',
             }
         }
     }).package(path.join(__dirname, 'package.json')),
+
+    log = new Log(),
 
     commander = cli.commander()
         .usage('<command> [options]')
@@ -38,18 +43,67 @@ commander
     .command('make [options]')
     .description('build blocks')
     .action(function() {
-        var config = cli.config(commander.config).config();
-        new Make({
-            outdir: Cli.resolveAbsolutePath(config.outdir || commander.outdir || '.'),
-            outname: config.outname || commander.outname || '',
-            directories: Cli.resolveAbsolutePath(config.directories || Cli.split(commander.directories) || []),
-            extensions: config.extensions || Cli.split(commander.extensions),
-            blocks: config.blocks || Cli.split(commander.blocks),
-            dependext: config.dependext || commander.dependext,
-            jsdoctag: config.jsdoctag || commander.jsdoctag
-        }).build().then(function() {
-                console.log('finished');
+        var config = cli.config(commander.config).config(),
+            timeStart = moment();
+
+        log.info({ text: 'build started' });
+
+        var make = new Make({
+                outdir: Cli.resolveAbsolutePath(config.outdir || commander.outdir || '.'),
+                outname: config.outname || commander.outname || '',
+                directories: Cli.resolveAbsolutePath(config.directories || Cli.split(commander.directories) || []),
+                extensions: config.extensions || Cli.split(commander.extensions),
+                blocks: config.blocks || Cli.split(commander.blocks),
+                dependext: config.dependext || commander.dependext,
+                jsdoctag: config.jsdoctag || commander.jsdoctag
             });
+
+        make
+            .on('level', function(data) {
+                log.log({
+                    operation: 'walk',
+                    path: data.path,
+                    description: 'directory'
+                });
+            })
+            .on('block', function(data) {
+                log.log({
+                    operation: 'walk',
+                    text: data.name,
+                    description: 'block'
+                });
+            })
+            .on('file', function(data) {
+                log.log({
+                    operation: 'walk',
+                    path: data.path,
+                    description: 'file'
+                });
+            })
+            .on('depend', function(data) {
+                log.log({
+                    operation: 'read',
+                    path: data.path,
+                    description: 'dependencies'
+                });
+            })
+            .on('extension', function(data) {
+                log.log({
+                    operation: 'group',
+                    text: data.name,
+                    description: 'extension'
+                });
+            })
+            .on('save', function(data) {
+                log.info({
+                    operation: 'write',
+                    path: data.path
+                });
+            });
+
+        make.build().then(function() {
+            log.info({ text: 'build finished', total: moment() - timeStart });
+        });
     });
 
 cli.parse();
