@@ -1,6 +1,7 @@
 const _ = require('lodash'),
     clicolor = require('cli-color'),
-    moment = require('moment');
+    moment = require('moment'),
+    Cli = require('./Cli');
 
 /**
  * Сообщение.
@@ -8,11 +9,18 @@ const _ = require('lodash'),
  * Может быть обычной строкой или хеш-картой.
  *
  * @typedef {string|{}} Log~Message
- * @property {string} [info.operation] Выполняемая операция
- * @property {string} [info.path] Путь до файла или директории
- * @property {string} [info.text] Сообщение
- * @property {string} [info.description] Пояснение
- * @property {number} [info.total] Длительность операции (мс)
+ * @property {string} [operation] Выполняемая операция
+ * @property {string} [path] Путь до файла или директории
+ * @property {string} [text] Сообщение
+ * @property {string} [description] Пояснение
+ * @property {number} [total] Длительность операции (мс)
+ */
+
+/**
+ * Опции.
+ *
+ * @typedef {{}} Log~Options
+ * @property {boolean} [relativePath=true] Печатать пути относительно текущей рабочей директории
  */
 
 /**
@@ -106,6 +114,8 @@ function Log(out, colors) {
         warn: this._defaultPattern,
         error: this._defaultPattern
     };
+
+    this.options({});
 }
 
 Log.prototype = {
@@ -151,6 +161,23 @@ Log.prototype = {
     },
 
     /**
+     * Установить/получить опции.
+     *
+     * @param {Log~Options} [options] Опции
+     * @returns {Log|Log~Options}
+     */
+    options: function(options) {
+        if(!options) {
+            return this._options;
+        }
+
+        this._options = _.defaults(options, this._options || {
+            relativePath: true
+        });
+        return this;
+    },
+
+    /**
      * Зарегистрировать тип сообщений.
      *
      * @param {string} type Имя типа
@@ -170,13 +197,27 @@ Log.prototype = {
      * @returns {string}
      */
     print: function(type, message) {
-        var line = this._patterns[type].call(this, this.colorize(type, message));
+        var line = this._patterns[type].call(this, this.colorize(type, this.resolveRelativePath(message)));
 
         if(this.out[type]) {
             this.out[type](line);
         }
 
         return line;
+    },
+
+    /**
+     * Получить относительный путь сообщения
+     * при наличии соответствующей опции.
+     *
+     * @param {Log~Message} message Сообщение
+     * @returns {Log~Message}
+     */
+    resolveRelativePath: function(message) {
+        if(message.path && this._options.relativePath) {
+            message.path = Cli.resolveRelativePath(message.path);
+        }
+        return message;
     },
 
     /**
