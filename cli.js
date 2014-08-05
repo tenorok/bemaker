@@ -22,8 +22,6 @@ var defaultConfigFile = 'bemaker.json',
         }
     }).package(path.join(__dirname, 'package.json')),
 
-    log = new Log(),
-
     commander = cli.commander()
         .usage('<command> [options]')
         .option('-o, --outdir <dir>', 'directory to output files')
@@ -44,7 +42,8 @@ commander
     .description('build blocks')
     .action(function() {
         var config = cli.config(commander.config).config(),
-            timeStart = moment();
+            timeStart = moment(),
+            log = new Log(cli.resolveVerboseAliases(commander.verbose || Object.keys(cli.verboseAliases).toString()));
 
         log.info({ text: 'build started' });
 
