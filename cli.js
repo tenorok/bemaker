@@ -86,6 +86,12 @@ commander
                     description: 'dependencies'
                 });
             })
+            .on('filter', function(data) {
+                log.log({
+                    operation: 'filter',
+                    text: data.block
+                });
+            })
             .on('extension', function(data) {
                 log.log({
                     operation: 'group',

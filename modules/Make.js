@@ -157,9 +157,15 @@ Make.prototype = {
      * @returns {Make~poolBlocks}
      */
     filter: function(blocks) {
-        return this._config.blocks
-            ? new Pool(new Depend(blocks).filter(this._config.blocks))
-            : blocks;
+        if(this._config.blocks) {
+            var pool = new Pool(new Depend(blocks).filter(this._config.blocks));
+            pool.get().forEach(function(block) {
+                this._emitter.emit('filter', { block: block.name });
+            }, this);
+            return pool;
+        }
+
+        return blocks;
     },
 
     /**
