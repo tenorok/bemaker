@@ -629,13 +629,12 @@ describe('Модуль Make.', function() {
     });
 
     it('Метод build', function(done) {
-        var make = new Make({
+        new Make({
             outdir: tmp,
             outname: 'all',
             directories: [common, desktop],
             extensions: ['.js', '.css']
-        });
-        make.build().then(function() {
+        }).build().then(function() {
             assert.equal(
                 fs.readFileSync(tmpAll.js, 'utf-8'),
                 fs.readFileSync(standardAll.js, 'utf-8')

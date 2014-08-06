@@ -1,7 +1,10 @@
 const path = require('path'),
+    Events = require('events'),
+
     _ = require('lodash'),
     Promise = require('bluebird'),
     Selector = require('bemer').modules('Selector'),
+
     fs = require('./fs'),
     Walk = require('./Walk'),
     Pool = require('./Pool'),
@@ -109,6 +112,14 @@ function Make(config) {
         dependext: '.js',
         jsdoctag: 'bemaker'
     });
+
+    /**
+     * Экземпляр событийного модуля.
+     *
+     * @private
+     * @type {events.EventEmitter}
+     */
+    this._emitter = new Events();
 }
 
 Make.prototype = {
@@ -146,9 +157,15 @@ Make.prototype = {
      * @returns {Make~poolBlocks}
      */
     filter: function(blocks) {
-        return this._config.blocks
-            ? new Pool(new Depend(blocks).filter(this._config.blocks))
-            : blocks;
+        if(this._config.blocks) {
+            var pool = new Pool(new Depend(blocks).filter(this._config.blocks));
+            pool.get().forEach(function(block) {
+                this._emitter.emit('filter', { block: block.name });
+            }, this);
+            return pool;
+        }
+
+        return blocks;
     },
 
     /**
@@ -183,6 +200,7 @@ Make.prototype = {
                         groups[file.extname].addFiles([file.path]);
                     } else if(!this._config.extensions || ~this._config.extensions.indexOf(file.extname)) {
                         groups[file.extname] = new Join([{ file: file.path }]);
+                        this._emitter.emit('extension', { name: file.extname });
                     }
                 }, this);
             }, this);
@@ -205,16 +223,26 @@ Make.prototype = {
         }, []))
             .then(function() {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
-                    promises.push(fs.fsAsync.writeFileAsync(
-                        path.join(this._config.outdir, this._config.outname + extname),
-                        content[extname]
-                    ));
+                    var filePath = path.join(this._config.outdir, this._config.outname + extname);
+                    promises.push(fs.fsAsync.writeFileAsync(filePath, content[extname]));
+                    this._emitter.emit('save', { path: filePath });
                     return promises;
                 }.bind(this), []));
             }.bind(this))
             .then(function() {
                 return content;
             });
+    },
+
+    /**
+     * Подписаться на события модуля.
+     *
+     * @param {string} event Имя события
+     * @param {function} listener Колбек
+     * @returns {events.EventEmitter}
+     */
+    on: function(event, listener) {
+        return this._emitter.on.call(this._emitter, event, listener);
     },
 
     /**
@@ -229,11 +257,15 @@ Make.prototype = {
         return new Walk(this._config.directories).dirs().spread(function(flat, levels) {
             levels.forEach(function(blocksList, levelIndex) {
                 var levelPath = this._config.directories[levelIndex];
+                this._emitter.emit('level', { path: levelPath });
+
                 blocksList.forEach(function(block) {
+                    this._emitter.emit('block', { name: block });
+
                     blocks.exists(block)
                         ? blocks.get(block).levels.push({ path: levelPath })
                         : blocks.push({ name: block, levels: [{ path: levelPath }] });
-                });
+                }, this);
             }, this);
             return blocks;
         }.bind(this));
@@ -247,6 +279,7 @@ Make.prototype = {
      * @returns {Promise} Make~poolBlocksLevelsFiles
      */
     _getLevelsFiles: function(blocks) {
+        var emitter = this._emitter;
         return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
             return promises.concat(block.levels.reduce(function(promises, level, levelIndex) {
                 return promises.concat(new Walk(path.join(level.path, block.name)).filesRecur().spread(function(list) {
@@ -254,16 +287,19 @@ Make.prototype = {
                         list.names.reduce(function(files, fileName, fileIndex) {
                             var extname = '.' + fileName.split('.').slice(1).join('.'),
                                 basename = path.basename(fileName, extname),
-                                selector = new Selector(basename);
+                                selector = new Selector(basename),
+                                filePath = list.absolute[fileIndex];
 
                             if(!selector.block()) {
                                 selector.block(block.name);
                             }
 
+                            emitter.emit('file', { path: filePath });
+
                             files.push({
                                 basename: basename,
                                 extname: extname,
-                                path: list.absolute[fileIndex],
+                                path: filePath,
                                 selector: selector
                             });
                             return files;
@@ -289,6 +325,7 @@ Make.prototype = {
                     if(file.extname === this._config.dependext) {
                         promises.push(fs.readFile(file.path).then(function(content) {
                             var require = Depend.parseJSDoc(content, this._config.jsdoctag);
+                            this._emitter.emit('depend', { path: file.path });
 
                             blocks.get()[blockIndex].require = blocks.get()[blockIndex].require
                                 ? blocks.get()[blockIndex].require.concat(require)

@@ -1,4 +1,5 @@
-const assert = require('chai').assert,
+const path = require('path'),
+    assert = require('chai').assert,
     clicolor = require('cli-color'),
     Log = require('../modules/Log');
 
@@ -61,10 +62,17 @@ describe('Модуль Log.', function() {
         assert.equal(log.log({ operation: 'read' }), log.brackets(clicolor[log.colors.log]('read')));
     });
 
-    it('Путь в логирующем сообщении', function() {
-        assert.equal(log.log({ path: '~/path/to/directory/' }),
-            log.brackets(clicolor[log.colors.path]('~/path/to/directory/'))
+    it('Относительный путь в логирующем сообщении', function() {
+        assert.equal(log.log({ path: path.join(__dirname, 'path/to/directory/') }),
+            log.brackets(clicolor[log.colors.path]('test/path/to/directory'))
         );
+    });
+
+    it('Абсолютный путь в логирующем сообщении', function() {
+        var absolutePath = path.join(__dirname, 'path/to/directory/');
+        assert.equal(log.options({
+            relativePath: false
+        }).log({ path: absolutePath }), log.brackets(clicolor[log.colors.path](absolutePath)));
     });
 
     it('Текст в логирующем сообщении', function() {

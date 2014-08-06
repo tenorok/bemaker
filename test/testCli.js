@@ -20,6 +20,41 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод resolveRelativePath.', function() {
+
+        it('Один путь', function() {
+            assert.equal(Cli.resolveRelativePath(path.join(__dirname, '../test/fixtures')), 'test/fixtures');
+        });
+
+        it('Несколько путей', function() {
+            assert.deepEqual(
+                Cli.resolveRelativePath([path.join(__dirname, '../test/1'), path.join(__dirname, '../test/2')]),
+                ['test/1', 'test/2']
+            );
+        });
+
+    });
+
+    describe('Метод split.', function() {
+
+        it('Обычная строка', function() {
+            assert.deepEqual(Cli.split('dir1,dir2'), ['dir1', 'dir2']);
+        });
+
+        it('Изменённый разделитель', function() {
+            assert.deepEqual(Cli.split('dir1:dir2', ':'), ['dir1', 'dir2']);
+        });
+
+        it('Пуста строка', function() {
+            assert.isUndefined(Cli.split(''));
+        });
+
+        it('Незаданное значение', function() {
+            assert.isUndefined(Cli.split(undefined));
+        });
+
+    });
+
     describe('Метод package.', function() {
 
         it('Установка и получение', function() {
@@ -105,6 +140,12 @@ describe('Модуль Cli.', function() {
                 .package(path.join(__dirname, '/fixtures/cli/package.json'))
                 .commander(new commander.Command().version('0.1.0'))
                 .commander().version(), '0.1.0');
+        });
+
+        it('Метод parse', function() {
+            var cmd = new Cli().parse().commander();
+            assert.isTrue(cmd.hasOwnProperty('rawArgs'));
+            assert.isTrue(cmd.hasOwnProperty('args'));
         });
 
         it('Метод getCommanderOption', function() {
@@ -201,12 +242,6 @@ describe('Модуль Cli.', function() {
             assert.equal(new Cli()
                 .config('config.json')
                 .commander().parse(['bemaker', 'make', '--config', 'my.json']).config, 'my.json');
-        });
-
-        it('Метод parse вызывается автоматически', function() {
-            var cmd = new Cli().commander();
-            assert.isTrue(cmd.hasOwnProperty('rawArgs'));
-            assert.isTrue(cmd.hasOwnProperty('args'));
         });
 
     });
