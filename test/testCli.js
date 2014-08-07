@@ -18,6 +18,10 @@ describe('Модуль Cli.', function() {
             );
         });
 
+        it('Указание абсолютного пути для резолва относительно него', function() {
+            assert.equal(Cli.resolveAbsolutePath(__dirname, 'fixtures/tmp'), path.join(__dirname, 'fixtures/tmp'));
+        });
+
     });
 
     describe('Метод resolveRelativePath.', function() {
@@ -31,6 +35,13 @@ describe('Модуль Cli.', function() {
                 Cli.resolveRelativePath([path.join(__dirname, '../test/1'), path.join(__dirname, '../test/2')]),
                 ['test/1', 'test/2']
             );
+        });
+
+        it('Указание абсолютного пути для резолва относительно него', function() {
+            assert.equal(Cli.resolveRelativePath(
+                path.join(__dirname, '../test'),
+                path.join(__dirname, '../test/fixtures/tmp')
+            ), 'fixtures/tmp');
         });
 
     });

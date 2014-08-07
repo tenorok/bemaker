@@ -297,39 +297,50 @@ Cli.prototype = {
  *
  * @private
  * @param {string} method Метод модуля `path` для резолва путей
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} resolvePath Путь или массив путей для резолва
  * @returns {string|string[]}
  */
-function resolveCwdPath(method, resolvePath) {
+function resolveCwdPath(method, from, resolvePath) {
+    if(!resolvePath) {
+        resolvePath = from;
+        from = process.cwd();
+    }
+
     return Array.isArray(resolvePath)
         ? resolvePath.map(function(resolvePath) {
-            return path[method](process.cwd(), resolvePath);
+            return path[method](from, resolvePath);
         })
-        : path[method](process.cwd(), resolvePath);
+        : path[method](from, resolvePath);
 }
 
 /**
  * Получить абсолютный путь из относительного
  * или массив абсолютных путей из массива относительных
- * относительно текущей рабочей директории.
+ * относительно текущей рабочей директории или заданного пути.
  *
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} relativePath Относительный путь или массив путей
  * @returns {string|string[]}
  */
-Cli.resolveAbsolutePath = function(relativePath) {
-    return resolveCwdPath('resolve', relativePath);
+Cli.resolveAbsolutePath = function(from, relativePath) {
+    return resolveCwdPath('resolve', from, relativePath);
 };
 
 /**
  * Получить относительный путь из абсолютного
  * или массив относительных путей из массива абсолютных
- * относительно текущей рабочей директории.
+ * относительно текущей рабочей директории или заданного пути.
  *
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} absolutePath Абсолютный путь или массив путей
  * @returns {string|string[]}
  */
-Cli.resolveRelativePath = function(absolutePath) {
-    return resolveCwdPath('relative', absolutePath);
+Cli.resolveRelativePath = function(from, absolutePath) {
+    return resolveCwdPath('relative', from, absolutePath);
 };
 
 /**
