@@ -28,7 +28,9 @@ var defaultConfigFile = 'bemaker.json',
         .option('-O, --outname <name>', 'name to output files')
         .option('-d, --directories <dir,dirN>', 'directories of blocks')
         .option('-e, --extensions <ext,extN>', 'extensions to build')
-        .option('-b, --blocks <block,blockN>', 'blocks to build');
+        .option('-b, --blocks <block,blockN>', 'blocks to build')
+        .option('--dependext <ext=.js>', 'extension to read dependencies')
+        .option('--jsdoctag <tag=bemaker>', 'jsdoc tag to read dependencies');
 
 cli.verboseAliases = {
     log: { log: console.log },
