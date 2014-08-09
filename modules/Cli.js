@@ -162,6 +162,30 @@ Cli.prototype = {
     },
 
     /**
+     * Получить абсолютный путь для опции.
+     *
+     * Приоритет у явно заданной опции в commander,
+     * при её отсутствии будет получен абсолютный путь из конфигурационного файла,
+     * а если отсутствует и он, то будет получен абсолютный путь из значения по умолчанию.
+     *
+     * @param {*} commanderVal Значение опции из commander
+     * @param {*} [configVal] Значение опции из конфигурационного файла
+     * @param {*} [defaultVal] Стандартное значение
+     * @returns {string|string[]}
+     */
+    resolveOptionPath: function(commanderVal, configVal, defaultVal) {
+        if(commanderVal) {
+            return Cli.resolveAbsolutePath(commanderVal);
+        }
+
+        if(configVal) {
+            return Cli.resolveAbsolutePath(path.dirname(Cli.resolveAbsolutePath(this._configPath)), configVal);
+        }
+
+        return Cli.resolveAbsolutePath(defaultVal);
+    },
+
+    /**
      * Установить/получить экземпляр Commander
      * с выполненным парсингом process.argv.
      *

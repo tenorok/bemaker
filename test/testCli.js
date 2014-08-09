@@ -134,6 +134,29 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод getOptionPath.', function() {
+
+        it('Получить путь из явно заданной опции', function() {
+            assert.equal(new Cli().resolveOptionPath('outdir', 'other/outdir'),
+                path.join(__dirname, '../outdir')
+            );
+        });
+
+        it('Получить путь относительно конфига', function() {
+            var configPath = 'test/fixtures/cli/config.json';
+            assert.equal(new Cli().config(configPath).resolveOptionPath('', 'other/outdir'),
+                path.join(path.dirname(Cli.resolveAbsolutePath(configPath)), 'other/outdir')
+            );
+        });
+
+        it('Получить значение по умолчанию', function() {
+            assert.equal(new Cli().resolveOptionPath('', '', './out'),
+                path.join(__dirname, '../out')
+            );
+        });
+
+    });
+
     describe('Работа с commander.', function() {
 
         it('Получить стандартный экземпляр Commander', function() {
