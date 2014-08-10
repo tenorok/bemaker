@@ -48,6 +48,10 @@ commander
         var config = cli.config(commander.config).config(),
             timeStart = moment();
 
+        if(config.verbose) {
+            log.out = config.verbose;
+        }
+
         log.info({ text: 'build started' });
 
         var make = new Make({
