@@ -22,6 +22,9 @@ const path = require('path'),
  * @property {string[]} [blocks] Блоки для сборки, по умолчанию собираются все блоки
  * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
+ * @property {boolean} [before=true] Флаг добавления комментария с путём до файла перед его контентом
+ * @property {boolean} [after=true] Флаг добавления комментария с путём до файла после его контента
+ * @property {string} [cwd=.] Текущая рабочая директория для резолва путей, по умолчанию текущая директория
  */
 
 /**
@@ -110,7 +113,10 @@ function Make(config) {
      */
     this._config = _.defaults(config, {
         dependext: '.js',
-        jsdoctag: 'bemaker'
+        jsdoctag: 'bemaker',
+        before: true,
+        after: true,
+        cwd: __dirname
     });
 
     /**
@@ -217,10 +223,10 @@ Make.prototype = {
     writeFilesByExtensions: function(groups) {
         var content = {};
         return Promise.all(Object.keys(groups).reduce(function(promises, extname) {
-            return promises.concat(groups[extname].toString().then(function(joined) {
+            return promises.concat(this._setBeforeAfterFile(groups[extname], extname).toString().then(function(joined) {
                 content[extname] = joined;
             }));
-        }, []))
+        }.bind(this), []))
             .then(function() {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
                     var filePath = path.join(this._config.outdir, this._config.outname + extname);
@@ -243,6 +249,31 @@ Make.prototype = {
      */
     on: function(event, listener) {
         return this._emitter.on.call(this._emitter, event, listener);
+    },
+
+    /**
+     * Установить предваряющую и последующую строки вокруг каждого файла.
+     *
+     * @param {Join} group Группа файлов с единым расширением
+     * @param {string} extname Расширение группы файлов
+     * @returns {Join} Модифицированный экземпляр
+     */
+    _setBeforeAfterFile: function(group, extname) {
+        var cwd = this._config.cwd;
+
+        if(this._config.before) {
+            group.beforeEachFile(function(i, file) {
+                return '/* before: ' + path.relative(cwd, file) + ' */\n';
+            });
+        }
+
+        if(this._config.after) {
+            group.afterEachFile(function(i, file) {
+                return '/* after: ' + path.relative(cwd, file) + ' */\n';
+            });
+        }
+
+        return group;
     },
 
     /**
