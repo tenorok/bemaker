@@ -22,9 +22,20 @@ const path = require('path'),
  * @property {string[]} [blocks] Блоки для сборки, по умолчанию собираются все блоки
  * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
- * @property {boolean} [before=true] Флаг добавления комментария с путём до файла перед его контентом
- * @property {boolean} [after=true] Флаг добавления комментария с путём до файла после его контента
+ * @property {boolean|Make~beforeAfterCallback} [before=true] Необходимость добавления комментария до файла
+ * @property {boolean|Make~beforeAfterCallback} [after=true] Необходимость добавления комментария после файла
  * @property {string} [cwd=.] Текущая рабочая директория для резолва путей, по умолчанию текущая директория
+ */
+
+/**
+ * Колбек вызывается перед установкой
+ * предваряющей и последующей строки для каждого файла.
+ *
+ * @callback Make~beforeAfterCallback
+ * @param {number} index Индекс файла
+ * @param {string} absPath Абсолютный путь до файла
+ * @param {string} relPath Относительный путь до файла
+ * @param {string} extname Полное расширение файла (например для `file.ie.css` будет `.ie.css`)
  */
 
 /**
@@ -259,19 +270,22 @@ Make.prototype = {
      * @returns {Join} Модифицированный экземпляр
      */
     _setBeforeAfterFile: function(group, extname) {
-        var cwd = this._config.cwd;
+        var config = this._config,
+            cwd = this._config.cwd;
 
-        if(this._config.before) {
-            group.beforeEachFile(function(i, file) {
-                return '/* before: ' + path.relative(cwd, file) + ' */\n';
-            });
-        }
-
-        if(this._config.after) {
-            group.afterEachFile(function(i, file) {
-                return '/* after: ' + path.relative(cwd, file) + ' */\n';
-            });
-        }
+        ['before', 'after'].forEach(function(place) {
+            if(config[place]) {
+                if(typeof config[place] === 'function') {
+                    group[place + 'EachFile'](function(i, file) {
+                        return config[place].call(this, i, file, path.relative(cwd, file), extname);
+                    });
+                } else {
+                    group[place + 'EachFile'](function(i, file) {
+                        return '/* ' + place + ': ' + path.relative(cwd, file) + ' */\n';
+                    });
+                }
+            }
+        });
 
         return group;
     },

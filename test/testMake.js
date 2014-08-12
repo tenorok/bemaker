@@ -9,12 +9,14 @@ const fs = require('fs'),
     tmpAll = {
         js: path.join(__dirname, 'fixtures/tmp/all.js'),
         css: path.join(__dirname, 'fixtures/tmp/all.css'),
-        iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css')
+        iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css'),
+        beforeAfter: path.join(__dirname, 'fixtures/tmp/beforeAfter.ie.css')
     },
     standardAll = {
         js: path.join(__dirname, 'fixtures/levels/build/all.js'),
         css: path.join(__dirname, 'fixtures/levels/build/all.css'),
-        iecss: path.join(__dirname, 'fixtures/levels/build/all.ie.css')
+        iecss: path.join(__dirname, 'fixtures/levels/build/all.ie.css'),
+        beforeAfter: path.join(__dirname, 'fixtures/levels/build/beforeAfter.ie.css')
     },
     common = path.join(__dirname, 'fixtures/levels/common/'),
     desktop = path.join(__dirname, 'fixtures/levels/desktop/');
@@ -642,6 +644,35 @@ describe('Модуль Make.', function() {
             assert.equal(
                 fs.readFileSync(tmpAll.css, 'utf-8'),
                 fs.readFileSync(standardAll.css, 'utf-8')
+            );
+            done();
+        });
+    });
+
+    it('Передача функции в опции before и after', function(done) {
+        new Make({
+            outdir: tmp,
+            outname: 'beforeAfter',
+            directories: [desktop],
+            extensions: ['.ie.css'],
+            before: function(i, abs, rel,  extname) {
+                assert.equal(i, 0);
+                assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
+                assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
+                assert.equal(extname, '.ie.css');
+                return '/* before */\n';
+            },
+            after: function(i, abs, rel,  extname) {
+                assert.equal(i, 0);
+                assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
+                assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
+                assert.equal(extname, '.ie.css');
+                return '/* after */\n';1
+            }
+        }).build().then(function() {
+            assert.equal(
+                fs.readFileSync(tmpAll.beforeAfter, 'utf-8'),
+                fs.readFileSync(standardAll.beforeAfter, 'utf-8')
             );
             done();
         });
