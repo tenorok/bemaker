@@ -26,12 +26,14 @@ commander
     .command('make')
     .description('build blocks')
     .option('-d, --directories <dir,dirN>', 'directories of blocks')
-    .option('-O, --outname <name>', 'name to output files')
-    .option('-o, --outdir <dir=.>', 'directory to output files')
+    .option('-o, --outname <name>', 'name to output files')
+    .option('-O, --outdir <dir=.>', 'directory to output files')
     .option('-e, --extensions <ext,extN>', 'extensions to build')
     .option('-b, --blocks <block,blockN>', 'blocks to build')
     .option('--dependext <ext=.js>', 'extension to read dependencies')
     .option('--jsdoctag <tag=bemaker>', 'jsdoc tag to read dependencies')
+    .option('--no-before', 'do not set comment before each file')
+    .option('--no-after', 'do not set comment after each file')
     .action(function(cmd) {
         var log = new Log(cli.resolveVerboseAliases(commander.verbose || Object.keys(cli.verboseAliases).toString()));
 
@@ -61,7 +63,10 @@ commander
             extensions: config.extensions || Cli.split(cmd.extensions),
             blocks: config.blocks || Cli.split(cmd.blocks),
             dependext: config.dependext || cmd.dependext,
-            jsdoctag: config.jsdoctag || cmd.jsdoctag
+            jsdoctag: config.jsdoctag || cmd.jsdoctag,
+            before: config.before || cmd.before,
+            after: config.after || cmd.after,
+            cwd: process.cwd()
         });
 
         make
