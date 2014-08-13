@@ -18,6 +18,10 @@ describe('Модуль Cli.', function() {
             );
         });
 
+        it('Указание абсолютного пути для резолва относительно него', function() {
+            assert.equal(Cli.resolveAbsolutePath(__dirname, 'fixtures/tmp'), path.join(__dirname, 'fixtures/tmp'));
+        });
+
     });
 
     describe('Метод resolveRelativePath.', function() {
@@ -31,6 +35,13 @@ describe('Модуль Cli.', function() {
                 Cli.resolveRelativePath([path.join(__dirname, '../test/1'), path.join(__dirname, '../test/2')]),
                 ['test/1', 'test/2']
             );
+        });
+
+        it('Указание абсолютного пути для резолва относительно него', function() {
+            assert.equal(Cli.resolveRelativePath(
+                path.join(__dirname, '../test'),
+                path.join(__dirname, '../test/fixtures/tmp')
+            ), 'fixtures/tmp');
         });
 
     });
@@ -123,6 +134,29 @@ describe('Модуль Cli.', function() {
 
     });
 
+    describe('Метод getOptionPath.', function() {
+
+        it('Получить путь из явно заданной опции', function() {
+            assert.equal(new Cli().resolveOptionPath('outdir', 'other/outdir'),
+                path.join(__dirname, '../outdir')
+            );
+        });
+
+        it('Получить путь относительно конфига', function() {
+            var configPath = 'test/fixtures/cli/config.json';
+            assert.equal(new Cli().config(configPath).resolveOptionPath('', 'other/outdir'),
+                path.join(path.dirname(Cli.resolveAbsolutePath(configPath)), 'other/outdir')
+            );
+        });
+
+        it('Получить значение по умолчанию', function() {
+            assert.equal(new Cli().resolveOptionPath('', '', './out'),
+                path.join(__dirname, '../out')
+            );
+        });
+
+    });
+
     describe('Работа с commander.', function() {
 
         it('Получить стандартный экземпляр Commander', function() {
@@ -183,65 +217,12 @@ describe('Модуль Cli.', function() {
             );
         });
 
-        it('Метод defaultCommanderOptions', function() {
-            assert.deepEqual(
-                new Cli().defaultCommanderOptions({ block: { flags: '-b, --block <name>' }}).defaultCommanderOptions(),
-                { block: { flags: '-b, --block <name>' }}
-            );
-        });
-
-        it('Метод isDefaultCommanderOption', function() {
-            assert.isTrue(new Cli().isDefaultCommanderOption('verbose'));
-            assert.isFalse(new Cli()
-                .setCommanderOption({ flags: '-v, --verbose', description: 'other verbose' })
-                .isDefaultCommanderOption('verbose')
-            );
-        });
-
-        it('Опция verbose указывается автоматически', function() {
-            var cli = new Cli();
-            assert.deepEqual(
-                cli.getCommanderOption('verbose'),
-                new commander.Option(
-                    cli.defaultCommanderOptions().verbose.flags,
-                    cli.defaultCommanderOptions().verbose.description
-                )
-            );
-        });
-
         it('Опция verbose указана вручную', function() {
             var cli = new Cli().commander(new commander.Command().option('-v, --verbose', 'another verbose'));
             assert.deepEqual(
                 cli.getCommanderOption('verbose'),
                 new commander.Option('-v, --verbose', 'another verbose')
             );
-        });
-
-        it('Отмена автоматического указания опций', function() {
-            assert.isUndefined(new Cli({ defaultCommanderOptions: {} }).getCommanderOption('verbose'));
-        });
-
-        it('Опция config указывается автоматически', function() {
-            var cli = new Cli();
-            assert.deepEqual(
-                cli.getCommanderOption('config'),
-                new commander.Option(
-                    cli.defaultCommanderOptions().config.flags,
-                    cli.defaultCommanderOptions().config.description
-                )
-            );
-        });
-
-        it('Опция config указывается автоматически с заданным конфигом', function() {
-            assert.equal(new Cli()
-                .config('config.json')
-                .commander().parse(['bemaker', 'make']).config, 'config.json');
-        });
-
-        it('Опция config переопределяется в команде', function() {
-            assert.equal(new Cli()
-                .config('config.json')
-                .commander().parse(['bemaker', 'make', '--config', 'my.json']).config, 'my.json');
         });
 
     });

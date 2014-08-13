@@ -51,7 +51,10 @@ Depend.prototype = {
             if(!sorted.exists(module)) {
                 require.forEach(function(requireName) {
                     if(!sorted.exists(requireName)) {
-                        sorted.push(modules.get(requireName));
+                        var requireModule = modules.get(requireName);
+                        if(requireModule) {
+                            sorted.push(requireModule);
+                        }
                     }
                 }, this);
 
@@ -59,7 +62,11 @@ Depend.prototype = {
             } else {
                 require.forEach(function(requireName) {
                     if(!sorted.exists(requireName)) {
-                        return sorted.unshift(modules.get(requireName));
+                        var requireModule = modules.get(requireName);
+                        if(requireModule) {
+                            sorted.unshift(requireModule);
+                        }
+                        return;
                     }
 
                     var moduleIndex = sorted.indexOf(module.name);

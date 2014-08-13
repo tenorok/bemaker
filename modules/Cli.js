@@ -1,5 +1,7 @@
 const path = require('path'),
     fs = require('fs'),
+    Events = require('events'),
+
     _ = require('lodash'),
     commander = require('commander');
 
@@ -13,22 +15,11 @@ const path = require('path'),
  */
 
 /**
- * Стандартные опции Commander.
- *
- * @typedef {{}} Cli~defaultCommanderOptions
- * @property {Cli~commanderOption} * Имя опции
- */
-
-/**
  * Модуль для упрощения написания CLI.
  *
  * @constructor
- * @param {{}} [options] Опции инициализации
- * @param {Cli~defaultCommanderOptions} [options.defaultCommanderOptions] Стандартные опции Commander
  */
-function Cli(options) {
-
-    options = options || {};
+function Cli() {
 
     /**
      * Версия.
@@ -55,22 +46,20 @@ function Cli(options) {
     this._configPath = '';
 
     /**
-     * Стандартные опции Commander.
-     *
-     * @private
-     * @type {Cli~defaultCommanderOptions}
-     */
-    this._defaultCommanderOptions;
-
-    this.defaultCommanderOptions(options.defaultCommanderOptions);
-
-    /**
      * Экземпляр Commander.
      *
      * @private
      * @type {Command}
      */
     this._commander = this.commander(new commander.Command()).commander();
+
+    /**
+     * Экземпляр событийного модуля.
+     *
+     * @private
+     * @type {events.EventEmitter}
+     */
+    this._emitter = new Events();
 }
 
 Cli.prototype = {
@@ -121,17 +110,17 @@ Cli.prototype = {
     config: function(configPath) {
         if(configPath) {
             this._configPath = configPath;
-
-            if(this.isDefaultCommanderOption('config')) {
-                this.setCommanderOption(this.defaultCommanderOptions().config);
-            }
-
             return this;
         }
 
-        return fs.existsSync(this._configPath)
-            ? JSON.parse(fs.readFileSync(Cli.resolveAbsolutePath(this._configPath), 'utf-8'))
-            : {};
+        if(fs.existsSync(this._configPath)) {
+            return JSON.parse(fs.readFileSync(Cli.resolveAbsolutePath(this._configPath), 'utf-8'));
+        } else {
+            this._emitter.emit('config-not-found', {
+                path: this._configPath
+            });
+            return {};
+        }
     },
 
     /**
@@ -162,6 +151,30 @@ Cli.prototype = {
     },
 
     /**
+     * Получить абсолютный путь для опции.
+     *
+     * Приоритет у явно заданной опции в commander,
+     * при её отсутствии будет получен абсолютный путь из конфигурационного файла,
+     * а если отсутствует и он, то будет получен абсолютный путь из значения по умолчанию.
+     *
+     * @param {*} commanderVal Значение опции из commander
+     * @param {*} [configVal] Значение опции из конфигурационного файла
+     * @param {*} [defaultVal] Стандартное значение
+     * @returns {string|string[]}
+     */
+    resolveOptionPath: function(commanderVal, configVal, defaultVal) {
+        if(commanderVal) {
+            return Cli.resolveAbsolutePath(commanderVal);
+        }
+
+        if(configVal) {
+            return Cli.resolveAbsolutePath(path.dirname(Cli.resolveAbsolutePath(this._configPath)), configVal);
+        }
+
+        return Cli.resolveAbsolutePath(defaultVal);
+    },
+
+    /**
      * Установить/получить экземпляр Commander
      * с выполненным парсингом process.argv.
      *
@@ -181,17 +194,6 @@ Cli.prototype = {
             }
         }
 
-        var defaultCommanderOptions = this.defaultCommanderOptions();
-        Object.keys(defaultCommanderOptions).forEach(function(option) {
-            if(!this.getCommanderOption(option)) {
-                this._commander.option(
-                    defaultCommanderOptions[option].flags,
-                    defaultCommanderOptions[option].description,
-                    defaultCommanderOptions[option].default
-                );
-            }
-        }, this);
-
         return this._commander;
     },
 
@@ -204,31 +206,6 @@ Cli.prototype = {
     parse: function(args) {
         this._commander.parse(args || process.argv);
         return this;
-    },
-
-    /**
-     * Получить/установить стандартные опции Commander.
-     *
-     * @param {Cli~defaultCommanderOptions} [options] Опции
-     * @returns {Cli|Cli~defaultCommanderOptions}
-     */
-    defaultCommanderOptions: function(options) {
-        if(options) {
-            this._defaultCommanderOptions = options;
-            return this;
-        }
-
-        return this._defaultCommanderOptions || {
-            verbose: {
-                flags: '-v, --verbose <modes>',
-                description: 'l - log, i - info, w - warn, e - error, comma delimited'
-            },
-            config: {
-                flags: '-c, --config <file>',
-                description: 'config in json format',
-                default: this._configPath || undefined
-            }
-        };
     },
 
     /**
@@ -277,17 +254,14 @@ Cli.prototype = {
     },
 
     /**
-     * Проверить опцию Commander на стандартно заданную.
+     * Подписаться на события модуля.
      *
-     * @param {string} optionName Полное имя опции без первых минусов
-     * @returns {boolean}
+     * @param {string} event Имя события
+     * @param {function} listener Колбек
+     * @returns {events.EventEmitter}
      */
-    isDefaultCommanderOption: function(optionName) {
-        var option = this.getCommanderOption(optionName),
-            defaultOption = this.defaultCommanderOptions()[optionName];
-
-        return option.flags === defaultOption.flags &&
-            option.description === defaultOption.description;
+    on: function(event, listener) {
+        return this._emitter.on.call(this._emitter, event, listener);
     }
 
 };
@@ -297,39 +271,50 @@ Cli.prototype = {
  *
  * @private
  * @param {string} method Метод модуля `path` для резолва путей
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} resolvePath Путь или массив путей для резолва
  * @returns {string|string[]}
  */
-function resolveCwdPath(method, resolvePath) {
+function resolveCwdPath(method, from, resolvePath) {
+    if(!resolvePath) {
+        resolvePath = from;
+        from = process.cwd();
+    }
+
     return Array.isArray(resolvePath)
         ? resolvePath.map(function(resolvePath) {
-            return path[method](process.cwd(), resolvePath);
+            return path[method](from, resolvePath);
         })
-        : path[method](process.cwd(), resolvePath);
+        : path[method](from, resolvePath);
 }
 
 /**
  * Получить абсолютный путь из относительного
  * или массив абсолютных путей из массива относительных
- * относительно текущей рабочей директории.
+ * относительно текущей рабочей директории или заданного пути.
  *
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} relativePath Относительный путь или массив путей
  * @returns {string|string[]}
  */
-Cli.resolveAbsolutePath = function(relativePath) {
-    return resolveCwdPath('resolve', relativePath);
+Cli.resolveAbsolutePath = function(from, relativePath) {
+    return resolveCwdPath('resolve', from, relativePath);
 };
 
 /**
  * Получить относительный путь из абсолютного
  * или массив относительных путей из массива абсолютных
- * относительно текущей рабочей директории.
+ * относительно текущей рабочей директории или заданного пути.
  *
+ * @param {string} [from=CWD] Абсолютный путь для резолва относительно него,
+ * по умолчанию текущая рабочая директория
  * @param {string|string[]} absolutePath Абсолютный путь или массив путей
  * @returns {string|string[]}
  */
-Cli.resolveRelativePath = function(absolutePath) {
-    return resolveCwdPath('relative', absolutePath);
+Cli.resolveRelativePath = function(from, absolutePath) {
+    return resolveCwdPath('relative', from, absolutePath);
 };
 
 /**

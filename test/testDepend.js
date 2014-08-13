@@ -68,6 +68,14 @@ describe('Модуль Depend.', function() {
             ]);
         });
 
+        it('Зависимость от несуществующих модулей', function() {
+            assert.deepEqual(new Depend([
+                { name: 'a', require: ['b', 'c'] }
+            ]).sort(), [
+                { name: 'a', require: ['b', 'c'] }
+            ]);
+        });
+
     });
 
     describe('Фильтрация модулей для заданного модуля', function() {

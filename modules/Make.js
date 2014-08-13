@@ -22,6 +22,20 @@ const path = require('path'),
  * @property {string[]} [blocks] Блоки для сборки, по умолчанию собираются все блоки
  * @property {string} [dependext=.js] Расширение файла для чтения зависимостей
  * @property {string} [jsdoctag=bemaker] Тег для чтения зависимостей в JSDoc
+ * @property {boolean|Make~beforeAfterCallback} [before=true] Необходимость добавления комментария до файла
+ * @property {boolean|Make~beforeAfterCallback} [after=true] Необходимость добавления комментария после файла
+ * @property {string} [cwd=.] Текущая рабочая директория для резолва путей, по умолчанию текущая директория
+ */
+
+/**
+ * Колбек вызывается перед установкой
+ * предваряющей и последующей строки для каждого файла.
+ *
+ * @callback Make~beforeAfterCallback
+ * @param {number} index Индекс файла
+ * @param {string} absPath Абсолютный путь до файла
+ * @param {string} relPath Относительный путь до файла
+ * @param {string} extname Полное расширение файла (например для `file.ie.css` будет `.ie.css`)
  */
 
 /**
@@ -110,7 +124,10 @@ function Make(config) {
      */
     this._config = _.defaults(config, {
         dependext: '.js',
-        jsdoctag: 'bemaker'
+        jsdoctag: 'bemaker',
+        before: true,
+        after: true,
+        cwd: __dirname
     });
 
     /**
@@ -217,10 +234,10 @@ Make.prototype = {
     writeFilesByExtensions: function(groups) {
         var content = {};
         return Promise.all(Object.keys(groups).reduce(function(promises, extname) {
-            return promises.concat(groups[extname].toString().then(function(joined) {
+            return promises.concat(this._setBeforeAfterFile(groups[extname], extname).toString().then(function(joined) {
                 content[extname] = joined;
             }));
-        }, []))
+        }.bind(this), []))
             .then(function() {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
                     var filePath = path.join(this._config.outdir, this._config.outname + extname);
@@ -243,6 +260,34 @@ Make.prototype = {
      */
     on: function(event, listener) {
         return this._emitter.on.call(this._emitter, event, listener);
+    },
+
+    /**
+     * Установить предваряющую и последующую строки вокруг каждого файла.
+     *
+     * @param {Join} group Группа файлов с единым расширением
+     * @param {string} extname Расширение группы файлов
+     * @returns {Join} Модифицированный экземпляр
+     */
+    _setBeforeAfterFile: function(group, extname) {
+        var config = this._config,
+            cwd = this._config.cwd;
+
+        ['before', 'after'].forEach(function(place) {
+            if(config[place]) {
+                if(typeof config[place] === 'function') {
+                    group[place + 'EachFile'](function(i, file) {
+                        return config[place].call(this, i, file, path.relative(cwd, file), extname);
+                    });
+                } else {
+                    group[place + 'EachFile'](function(i, file) {
+                        return '/* ' + place + ': ' + path.relative(cwd, file) + ' */\n';
+                    });
+                }
+            }
+        });
+
+        return group;
     },
 
     /**
