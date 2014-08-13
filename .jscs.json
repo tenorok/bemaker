@@ -51,8 +51,7 @@
         "<",
         "<="
     ],
-    "disallowLeftStickedOperators": [
-        "?",
+    "requireSpaceBeforeBinaryOperators": [
         "+",
         "-",
         "/",
@@ -67,9 +66,8 @@
         "<",
         "<="
     ],
-    "requireLeftStickedOperators": [","],
-    "disallowRightStickedOperators": [
-        "?",
+    "disallowSpaceBeforeBinaryOperators": [","],
+    "requireSpaceAfterBinaryOperators": [
         "/",
         "*",
         ":",
@@ -83,14 +81,13 @@
         "<",
         "<="
     ],
-    "requireRightStickedOperators": ["!"],
+    "disallowSpaceAfterBinaryOperators": ["!"],
     "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
     "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
     "disallowKeywords": ["with"],
     "disallowMultipleLineBreaks": true,
     "validateQuoteMarks": "'",
     "disallowTrailingWhitespace": true,
-    "disallowKeywordsOnNewLine": ["else"],
     "requireLineFeedAtFileEnd": true,
     "maximumLineLength": 120,
     "requireCapitalizedConstructors": true,
@@ -100,5 +97,11 @@
         "checkParamNames": true,
         "checkRedundantParams": true,
         "requireParamTypes": true
+    },
+    "requireSpacesInConditionalExpression": {
+        "afterTest": true,
+        "beforeConsequent": true,
+        "afterConsequent": true,
+        "beforeAlternate": true
     }
 }

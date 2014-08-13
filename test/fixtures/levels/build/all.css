@@ -1,0 +1,33 @@
+/* before: ../test/fixtures/levels/common/under/under.css */
+.under {}
+/* after: ../test/fixtures/levels/common/under/under.css */
+/* before: ../test/fixtures/levels/common/link/__blank.css */
+.link__blank {}
+/* after: ../test/fixtures/levels/common/link/__blank.css */
+/* before: ../test/fixtures/levels/common/checkbox/checkbox.css */
+.checkbox {}
+/* after: ../test/fixtures/levels/common/checkbox/checkbox.css */
+/* before: ../test/fixtures/levels/common/button/button.css */
+.button {}
+/* after: ../test/fixtures/levels/common/button/button.css */
+/* before: ../test/fixtures/levels/common/button/__control.css */
+.button__control {}
+/* after: ../test/fixtures/levels/common/button/__control.css */
+/* before: ../test/fixtures/levels/desktop/button/__control/button__control.css */
+.buttonDesktop__control {}
+/* after: ../test/fixtures/levels/desktop/button/__control/button__control.css */
+/* before: ../test/fixtures/levels/common/input/input.css */
+.input {}
+/* after: ../test/fixtures/levels/common/input/input.css */
+/* before: ../test/fixtures/levels/common/input/__control/__control.css */
+.input__control {}
+/* after: ../test/fixtures/levels/common/input/__control/__control.css */
+/* before: ../test/fixtures/levels/common/select/select.css */
+.select {}
+/* after: ../test/fixtures/levels/common/select/select.css */
+/* before: ../test/fixtures/levels/common/select/_mod_val/_mod_val.css */
+.select_mod_val {}
+/* after: ../test/fixtures/levels/common/select/_mod_val/_mod_val.css */
+/* before: ../test/fixtures/levels/desktop/popup/popup.css */
+.popup {}
+/* after: ../test/fixtures/levels/desktop/popup/popup.css */
