@@ -64,8 +64,8 @@ commander
             blocks: config.blocks || Cli.split(cmd.blocks),
             dependext: config.dependext || cmd.dependext,
             jsdoctag: config.jsdoctag || cmd.jsdoctag,
-            before: config.before || cmd.before,
-            after: config.after || cmd.after,
+            before: typeof config.before === 'boolean' ? config.before : cmd.before,
+            after: typeof config.after === 'boolean' ? config.after : cmd.after,
             cwd: process.cwd()
         });
 
