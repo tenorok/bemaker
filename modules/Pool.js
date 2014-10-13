@@ -177,7 +177,7 @@ Pool.prototype = {
     /**
      * Удалить модуль или несколько модулей по их именам или индексам.
      *
-     * @param {string|number|*[]} desire Имя модуля, индекс модули, массив имён и индексов
+     * @param {string|number|array} desire Имя модуля, индекс модули, массив имён и индексов
      * @returns {Pool}
      */
     delete: function(desire) {
@@ -208,7 +208,7 @@ Pool.prototype = {
     /**
      * Отфильтровать модули по их именам, индексам или с помощью колбека.
      *
-     * @param {*[]|Pool~filterCallback} desire Список имён и индексов или колбек
+     * @param {array|Pool~filterCallback} desire Список имён и индексов или колбек
      * @returns {Pool}
      */
     filter: function(desire) {

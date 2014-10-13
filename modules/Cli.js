@@ -1,6 +1,6 @@
 const path = require('path'),
     fs = require('fs'),
-    Events = require('events'),
+    Events = require('events').EventEmitter,
 
     _ = require('lodash'),
     commander = require('commander');
@@ -200,7 +200,7 @@ Cli.prototype = {
     /**
      * Пропарсить команду.
      *
-     * @param {[]} [args=process.argv] Аргументы
+     * @param {string[]} [args=process.argv] Аргументы
      * @returns {Cli}
      */
     parse: function(args) {

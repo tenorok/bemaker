@@ -1,5 +1,5 @@
 const path = require('path'),
-    Events = require('events'),
+    Events = require('events').EventEmitter,
 
     _ = require('lodash'),
     Promise = require('bluebird'),
