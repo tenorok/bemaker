@@ -1,6 +1,6 @@
 const path = require('path'),
     fs = require('fs'),
-    Events = require('events'),
+    Events = require('events').EventEmitter,
 
     _ = require('lodash'),
     commander = require('commander');
