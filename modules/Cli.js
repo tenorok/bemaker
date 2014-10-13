@@ -200,7 +200,7 @@ Cli.prototype = {
     /**
      * Пропарсить команду.
      *
-     * @param {[]} [args=process.argv] Аргументы
+     * @param {string[]} [args=process.argv] Аргументы
      * @returns {Cli}
      */
     parse: function(args) {
