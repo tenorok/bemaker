@@ -1,7 +1,7 @@
 {
     "name": "bemaker",
     "description": "BEM project builder",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "repository": {
         "type": "git",
         "url": "https://github.com/tenorok/bemaker.git"
@@ -25,7 +25,7 @@
     "devDependencies": {
         "git-hooks": "~0.0.6",
         "jsdoc": "~3.3.0-alpha",
-        "jscs": "~1.5.4",
+        "jscs": "~1.6.2",
         "mocha": "~1.20.1",
         "chai": "~1.9.1",
         "rimraf": "~2.2.8"
