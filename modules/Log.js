@@ -35,7 +35,7 @@ const _ = require('lodash'),
 /**
  * Модуль логирования.
  *
- * @constructor
+ * @class
  * @param {{}} [out] Функции вывода сообщений
  * @param {function} [out.log] Логирование
  * @param {function} [out.info] Информирование

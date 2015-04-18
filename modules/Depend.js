@@ -14,7 +14,7 @@ const Events = require('events').EventEmitter,
 /**
  * Модуль для работы с зависимостями.
  *
- * @constructor
+ * @class
  * @param {Depend~Module[]|Pool} modules Модули
  */
 function Depend(modules) {
@@ -108,12 +108,21 @@ Depend.prototype = {
      *
      * @private
      * @param {Depend~Module} module Заданный модуль
+     * @fires Depend#circle
      */
     _sort: function(module) {
         this._branch.push(module.name);
 
         if(this._visited.exists(module)) {
             if(this._branch.length > 1 && this._branch[0] === module.name) {
+
+                /**
+                 * Событие обнаружения циклической зависимости.
+                 * Передаёт список имён модулей в порядке зависимостей.
+                 *
+                 * @event Depend#circle
+                 * @type {string[]}
+                 */
                 this._emitter.emit('circle', this._branch);
             }
 

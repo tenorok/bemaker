@@ -70,9 +70,9 @@ describe('Модуль Depend.', function() {
                 { name: 'b', require: ['c'] }
             ]);
 
-            assert.equal(callback.callCount, 2, 'два раза инициируется событие круговой зависимости');
-            assert.isTrue(callback1.calledOnce);
-            assert.isTrue(callback2.calledOnce);
+            assert.equal(callback.callCount, 2, 'два раза инициируется событие циклической зависимости');
+            assert.isTrue(callback1.calledOnce, 'цикл 1');
+            assert.isTrue(callback2.calledOnce, 'цикл 2');
         });
 
         it('Четыре модуля с множественными зависимостями', function() {
@@ -115,11 +115,11 @@ describe('Модуль Depend.', function() {
                 { name: 'a', require: ['f', 'e'] }
             ]);
 
-            assert.equal(callback.callCount, 4, 'инициируются события круговой зависимости');
-            assert.isTrue(callback1.calledOnce, 'первый круг');
-            assert.isTrue(callback2.calledOnce, 'второй круг');
-            assert.isTrue(callback3.calledOnce, 'третий круг');
-            assert.isTrue(callback4.calledOnce, 'четвёртый круг');
+            assert.equal(callback.callCount, 4, 'инициируются события циклической зависимости');
+            assert.isTrue(callback1.calledOnce, 'цикл 1');
+            assert.isTrue(callback2.calledOnce, 'цикл 2');
+            assert.isTrue(callback3.calledOnce, 'цикл 3');
+            assert.isTrue(callback4.calledOnce, 'цикл 4');
         });
 
         it('Зависимость от несуществующих модулей', function() {

@@ -6,7 +6,7 @@ const path = require('path'),
 /**
  * Модуль для получения информации о файловой структуре.
  *
- * @constructor
+ * @class
  * @param {string|string[]} directories Одна или несколько директорий
  */
 function Walk(directories) {

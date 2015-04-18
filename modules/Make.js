@@ -111,7 +111,7 @@ const path = require('path'),
 /**
  * Модуль логики сборки.
  *
- * @constructor
+ * @class
  * @param {Make~Config} config Опции сборки
  */
 function Make(config) {
@@ -171,12 +171,21 @@ Make.prototype = {
      * на основании поля `blocks` в опциях сборки.
      *
      * @param {Make~poolBlocks} blocks Список блоков
+     * @fires Make#filter
      * @returns {Make~poolBlocks}
      */
     filter: function(blocks) {
         if(this._config.blocks) {
             var pool = new Pool(new Depend(blocks).filter(this._config.blocks));
             pool.get().forEach(function(block) {
+
+                /**
+                 * Событие c информацией об отфильтрованных блоках.
+                 *
+                 * @event Make#filter
+                 * @type {{}}
+                 * @property {string} block Имя блока
+                 */
                 this._emitter.emit('filter', { block: block.name });
             }, this);
             return pool;
@@ -207,6 +216,7 @@ Make.prototype = {
      * Сгруппировать файлы блоков по расширениям.
      *
      * @param {Make~poolBlocks} blocks Список блоков
+     * @fires Make#extension
      * @returns {Make~groupsByExtensions}
      */
     groupByExtensions: function(blocks) {
@@ -217,6 +227,14 @@ Make.prototype = {
                         groups[file.extname].addFiles([file.path]);
                     } else if(!this._config.extensions || ~this._config.extensions.indexOf(file.extname)) {
                         groups[file.extname] = new Join([{ file: file.path }]);
+
+                        /**
+                         * Событие добавления нового расширения для группировки файлов.
+                         *
+                         * @event Make#extension
+                         * @type {{}}
+                         * @property {string} name Имя расширения
+                         */
                         this._emitter.emit('extension', { name: file.extname });
                     }
                 }, this);
@@ -229,6 +247,7 @@ Make.prototype = {
      * Сохранить файлы по расширениям.
      *
      * @param {Make~groupsByExtensions} groups Файлы блоков по расширениям
+     * @fires Make#save
      * @returns {Promise} Make~contentByExtensions
      */
     writeFilesByExtensions: function(groups) {
@@ -242,6 +261,14 @@ Make.prototype = {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
                     var filePath = path.join(this._config.outdir, this._config.outname + extname);
                     promises.push(fs.fsAsync.writeFileAsync(filePath, content[extname]));
+
+                    /**
+                     * Событие сохранения собранного для расширения файла.
+                     *
+                     * @event Make#save
+                     * @type {{}}
+                     * @property {string} path Путь до сохранённого файла
+                     */
                     this._emitter.emit('save', { path: filePath });
                     return promises;
                 }.bind(this), []));
@@ -295,6 +322,8 @@ Make.prototype = {
      * на которых они присутствуют.
      *
      * @private
+     * @fires Make#level
+     * @fires Make#block
      * @returns {Promise} Make~poolBlocksList
      */
     _getBlocksList: function() {
@@ -302,9 +331,25 @@ Make.prototype = {
         return new Walk(this._config.directories).dirs().spread(function(flat, levels) {
             levels.forEach(function(blocksList, levelIndex) {
                 var levelPath = this._config.directories[levelIndex];
+
+                /**
+                 * Событие чтения директорий блоков на уровне переопределения.
+                 *
+                 * @event Make#level
+                 * @type {{}}
+                 * @property {string} path Путь до уровня переопределения
+                 */
                 this._emitter.emit('level', { path: levelPath });
 
                 blocksList.forEach(function(block) {
+
+                    /**
+                     * Событие чтения директории одного из блоков на уровне переопределения.
+                     *
+                     * @event Make#block
+                     * @type {{}}
+                     * @property {string} name Имя блока
+                     */
                     this._emitter.emit('block', { name: block });
 
                     blocks.exists(block)
@@ -321,6 +366,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
+     * @fires Make#file
      * @returns {Promise} Make~poolBlocksLevelsFiles
      */
     _getLevelsFiles: function(blocks) {
@@ -339,6 +385,13 @@ Make.prototype = {
                                 selector.block(block.name);
                             }
 
+                            /**
+                             * Событие чтения файла блока.
+                             *
+                             * @event Make#file
+                             * @type {{}}
+                             * @property {string} path Путь до файла
+                             */
                             emitter.emit('file', { path: filePath });
 
                             files.push({
@@ -361,6 +414,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksLevelsFiles} blocks Список блоков, их уровни переопределения и файлы
+     * @fires Make#depend
      * @returns {Promise} Make~poolBlocks
      */
     _getBlocksDepends: function(blocks) {
@@ -370,6 +424,14 @@ Make.prototype = {
                     if(file.extname === this._config.dependext) {
                         promises.push(fs.readFile(file.path).then(function(content) {
                             var require = Depend.parseJSDoc(content, this._config.jsdoctag);
+
+                            /**
+                             * Событие чтения зависимостей блока.
+                             *
+                             * @event Make#depend
+                             * @type {{}}
+                             * @property {string} path Путь до файла с зависимостями
+                             */
                             this._emitter.emit('depend', { path: file.path });
 
                             blocks.get()[blockIndex].require = blocks.get()[blockIndex].require

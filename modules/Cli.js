@@ -17,7 +17,7 @@ const path = require('path'),
 /**
  * Модуль для упрощения написания CLI.
  *
- * @constructor
+ * @class
  */
 function Cli() {
 
@@ -105,6 +105,7 @@ Cli.prototype = {
      * Получить содержимое файла.
      *
      * @param {string} [configPath] Относительный путь
+     * @fires Cli#config-not-found
      * @returns {Cli|{}}
      */
     config: function(configPath) {
@@ -116,6 +117,14 @@ Cli.prototype = {
         if(fs.existsSync(this._configPath)) {
             return JSON.parse(fs.readFileSync(Cli.resolveAbsolutePath(this._configPath), 'utf-8'));
         } else {
+
+            /**
+             * Событие отсутствия конфигурационного файла по указанному пути.
+             *
+             * @event Cli#config-not-found
+             * @type {{}}
+             * @property {string} path Путь до отсутствующего файла
+             */
             this._emitter.emit('config-not-found', {
                 path: this._configPath
             });
