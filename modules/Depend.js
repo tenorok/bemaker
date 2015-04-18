@@ -1,4 +1,6 @@
-const jsdocParser = require('comment-parser'),
+const Events = require('events').EventEmitter,
+
+    jsdocParser = require('comment-parser'),
     Pool = require('./Pool');
 
 /**
@@ -26,12 +28,12 @@ function Depend(modules) {
     this._modules = modules instanceof Pool ? modules : new Pool(modules);
 
     /**
-     * Хранилище отсортированных модулей.
+     * Экземпляр событийного модуля.
      *
      * @private
-     * @type {Pool}
+     * @type {events.EventEmitter}
      */
-    this._sorted = new Pool();
+    this._emitter = new Events();
 }
 
 Depend.prototype = {
@@ -42,43 +44,46 @@ Depend.prototype = {
      * @returns {Depend~Module[]}
      */
     sort: function() {
-        var modules = this._modules,
-            sorted = this._sorted;
 
-        modules.get().forEach(function(module) {
-            var require = module.require || [];
+        /**
+         * Хранилище отсортированных модулей.
+         *
+         * @private
+         * @type {Pool}
+         */
+        this._sorted = new Pool();
 
-            if(!sorted.exists(module)) {
-                require.forEach(function(requireName) {
-                    if(!sorted.exists(requireName)) {
-                        var requireModule = modules.get(requireName);
-                        if(requireModule) {
-                            sorted.push(requireModule);
-                        }
-                    }
-                }, this);
+        /**
+         * Хранилище посещённых во время сортировки модулей.
+         *
+         * @private
+         * @type {Pool}
+         */
+        this._visited = new Pool();
 
-                sorted.push(module);
-            } else {
-                require.forEach(function(requireName) {
-                    if(!sorted.exists(requireName)) {
-                        var requireModule = modules.get(requireName);
-                        if(requireModule) {
-                            sorted.unshift(requireModule);
-                        }
-                        return;
-                    }
+        /**
+         * Список модулей всевозможных ветвей зависимостей.
+         * Для отслеживания и фиксации рекурсивных зависимостей.
+         *
+         * @private
+         * @type {string[]}
+         */
+        this._branch = [];
 
-                    var moduleIndex = sorted.indexOf(module.name);
-                    if(sorted.indexOf(requireName) > moduleIndex) {
-                        sorted.move(requireName, moduleIndex);
-                    }
-                }, this);
-            }
+        this._modules.get().forEach(this._sort, this);
 
-        }, this);
+        return this._sorted.get();
+    },
 
-        return sorted.get();
+    /**
+     * Подписаться на события модуля.
+     *
+     * @param {string} event Имя события
+     * @param {function} listener Колбек
+     * @returns {events.EventEmitter}
+     */
+    on: function(event, listener) {
+        return this._emitter.on.call(this._emitter, event, listener);
     },
 
     /**
@@ -96,6 +101,40 @@ Depend.prototype = {
                     return filteredNames.concat(this._filter(name, []));
                 }.bind(this), [])
         ).get();
+    },
+
+    /**
+     * Рекурсивно отсортировать модули по зависимостям для заданного модуля.
+     *
+     * @private
+     * @param {Depend~Module} module Заданный модуль
+     */
+    _sort: function(module) {
+        this._branch.push(module.name);
+
+        if(this._visited.exists(module)) {
+            if(this._branch.length > 1 && this._branch[0] === module.name) {
+                this._emitter.emit('circle', this._branch);
+            }
+
+            this._branch.pop();
+            return;
+        }
+
+        this._visited.push(module);
+
+        (module.require || []).forEach(function(requireName) {
+            var requireModule = this._modules.get(requireName);
+            if(requireModule) {
+                this._sort(requireModule);
+            }
+        }, this);
+
+        if(!this._sorted.exists(module)) {
+            this._sorted.push(module);
+        }
+
+        this._branch.pop();
     },
 
     /**

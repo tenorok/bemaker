@@ -1,4 +1,5 @@
 const assert = require('chai').assert,
+    sinon = require('sinon'),
     Pool = require('../modules/Pool'),
     Depend = require('../modules/Depend');
 
@@ -27,13 +28,22 @@ describe('Модуль Depend.', function() {
         });
 
         it('Циклическая зависимость двух модулей', function() {
-            assert.deepEqual(new Depend([
-                { name: 'a', require: ['b'] },
-                { name: 'b', require: ['a'] }
-            ]).sort(), [
-                { name: 'a', require: ['b'] },
-                { name: 'b', require: ['a'] }
+            var depend = new Depend([
+                    { name: 'a', require: ['b'] },
+                    { name: 'b', require: ['a'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs(['a', 'b', 'a']);
+
+            depend.on('circle', callback);
+
+            assert.deepEqual(depend.sort(), [
+                { name: 'b', require: ['a'] },
+                { name: 'a', require: ['b'] }
             ]);
+
+            assert.equal(callback.callCount, 1, 'инициируется событие круговой зависимости');
+            assert.isTrue(callback1.calledOnce);
         });
 
         it('Четыре модуля с множественными зависимостями', function() {
@@ -51,21 +61,36 @@ describe('Модуль Depend.', function() {
         });
 
         it('Шесть модулей с множественными зависимостями', function() {
-            assert.deepEqual(new Depend([
-                { name: 'a', require: ['f', 'e'] },
-                { name: 'b', require: ['a', 'c'] },
-                { name: 'c', require: ['f'] },
-                { name: 'd', require: ['a', 'b'] },
-                { name: 'e', require: ['d', 'f', 'a'] },
-                { name: 'f', require: ['a'] }
-            ]).sort(), [
-                { name: 'a', require: ['f', 'e'] },
+            var depend = new Depend([
+                    { name: 'a', require: ['f', 'e'] },
+                    { name: 'b', require: ['a', 'c'] },
+                    { name: 'c', require: ['f'] },
+                    { name: 'd', require: ['a', 'b'] },
+                    { name: 'e', require: ['d', 'f', 'a'] },
+                    { name: 'f', require: ['a'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs(['a', 'f', 'a']),
+                callback2 = callback.withArgs(['a', 'e', 'd', 'a']),
+                callback3 = callback.withArgs(['a', 'e', 'd', 'b', 'a']),
+                callback4 = callback.withArgs(['a', 'e', 'a']);
+
+            depend.on('circle', callback);
+
+            assert.deepEqual(depend.sort(), [
                 { name: 'f', require: ['a'] },
+                { name: 'c', require: ['f'] },
+                { name: 'b', require: ['a', 'c'] },
                 { name: 'd', require: ['a', 'b'] },
                 { name: 'e', require: ['d', 'f', 'a'] },
-                { name: 'c', require: ['f'] },
-                { name: 'b', require: ['a', 'c'] }
+                { name: 'a', require: ['f', 'e'] }
             ]);
+
+            assert.equal(callback.callCount, 4, 'инициируются события круговой зависимости');
+            assert.isTrue(callback1.calledOnce, 'первый круг');
+            assert.isTrue(callback2.calledOnce, 'второй круг');
+            assert.isTrue(callback3.calledOnce, 'третий круг');
+            assert.isTrue(callback4.calledOnce, 'четвёртый круг');
         });
 
         it('Зависимость от несуществующих модулей', function() {
