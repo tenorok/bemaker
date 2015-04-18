@@ -46,6 +46,35 @@ describe('Модуль Depend.', function() {
             assert.isTrue(callback1.calledOnce);
         });
 
+        it('Циклические зависимости от разных модулей', function() {
+            var depend = new Depend([
+                    { name: 'a', require: ['e'] },
+                    { name: 'b', require: ['c'] },
+                    { name: 'c', require: ['d'] },
+                    { name: 'd', require: ['b'] },
+                    { name: 'e', require: ['f'] },
+                    { name: 'f', require: ['a'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs(['a', 'e', 'f', 'a']),
+                callback2 = callback.withArgs(['b', 'c', 'd', 'b']);
+
+            depend.on('circle', callback);
+
+            assert.deepEqual(depend.sort(), [
+                { name: 'f', require: ['a'] },
+                { name: 'e', require: ['f'] },
+                { name: 'a', require: ['e'] },
+                { name: 'd', require: ['b'] },
+                { name: 'c', require: ['d'] },
+                { name: 'b', require: ['c'] }
+            ]);
+
+            assert.equal(callback.callCount, 2, 'два раза инициируется событие круговой зависимости');
+            assert.isTrue(callback1.calledOnce);
+            assert.isTrue(callback2.calledOnce);
+        });
+
         it('Четыре модуля с множественными зависимостями', function() {
             assert.deepEqual(new Depend([
                 { name: 'a', require: ['b'] },
@@ -60,7 +89,7 @@ describe('Модуль Depend.', function() {
             ]);
         });
 
-        it('Шесть модулей с множественными зависимостями', function() {
+        it('Циклические зависимости шести модулей', function() {
             var depend = new Depend([
                     { name: 'a', require: ['f', 'e'] },
                     { name: 'b', require: ['a', 'c'] },
@@ -98,6 +127,30 @@ describe('Модуль Depend.', function() {
                 { name: 'a', require: ['b', 'c'] }
             ]).sort(), [
                 { name: 'a', require: ['b', 'c'] }
+            ]);
+        });
+
+        it('Практический приукрашенный пример', function() {
+            assert.deepEqual(new Depend([
+                { name: 'body', require: ['i-block'] },
+                { name: 'document', require: ['order', 'input'] },
+                { name: 'i-block' },
+                { name: 'i-component', require: ['i-block'] },
+                { name: 'i-control', require: ['i-component'] },
+                { name: 'background', require: ['i-block', 'input'] },
+                { name: 'input', require: ['i-control'] },
+                { name: 'modal', require: ['background', 'i-block'] },
+                { name: 'order', require: ['modal', 'i-block'] }
+            ]).sort(), [
+                { name: 'i-block' },
+                { name: 'body', require: ['i-block'] },
+                { name: 'i-component', require: ['i-block'] },
+                { name: 'i-control', require: ['i-component'] },
+                { name: 'input', require: ['i-control'] },
+                { name: 'background', require: ['i-block', 'input'] },
+                { name: 'modal', require: ['background', 'i-block'] },
+                { name: 'order', require: ['modal', 'i-block'] },
+                { name: 'document', require: ['order', 'input'] }
             ]);
         });
 
