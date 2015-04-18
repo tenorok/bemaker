@@ -19,7 +19,8 @@ const fs = require('fs'),
         beforeAfter: path.join(__dirname, 'fixtures/levels/build/beforeAfter.ie.css')
     },
     common = path.join(__dirname, 'fixtures/levels/common/'),
-    desktop = path.join(__dirname, 'fixtures/levels/desktop/');
+    desktop = path.join(__dirname, 'fixtures/levels/desktop/'),
+    touch = path.join(__dirname, 'fixtures/levels/touch/');
 
 describe('Модуль Make.', function() {
 
@@ -525,6 +526,20 @@ describe('Модуль Make.', function() {
                 ]);
                 done();
             });
+    });
+
+    it('Метод sort должен инициировать событие circle для циркулярных зависимостей', function(done) {
+        var make = new Make({
+            directories: [touch]
+        });
+        make.on('circle', function(branch) {
+            assert.lengthOf(branch, 3);
+            // Наиболее вероятное значение: `['pen', 'pointer', 'pen']`, однако при задержках
+            // на файловой системе может быть другой порядок: `['pointer', 'pen', 'pointer']`.
+            assert.includeMembers(branch, ['pen', 'pointer']);
+            done();
+        });
+        make.getBlocks().then(make.sort.bind(make));
     });
 
     it('Метод groupByExtensions', function(done) {

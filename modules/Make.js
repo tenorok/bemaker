@@ -199,6 +199,7 @@ Make.prototype = {
      * и их файлы по весу селекторов.
      *
      * @param {Make~poolBlocks} blocks Список блоков
+     * @fires Depend#circle
      * @returns {Make~poolBlocks} Отсортированный список блоков
      */
     sort: function(blocks) {
@@ -209,7 +210,19 @@ Make.prototype = {
                 });
             });
         });
-        return new Depend(blocks).sort();
+        var depend = new Depend(blocks);
+        depend.on('circle', function() {
+
+            /**
+             * Прокси для события обнаружения циклической зависимости в модуле `Depend`.
+             * Передаёт список имён модулей в порядке зависимостей.
+             *
+             * @event Depend#circle
+             * @type {string[]}
+             */
+            this._emitter.emit.apply(this._emitter, ['circle'].concat(Array.prototype.slice.call(arguments)));
+        }.bind(this));
+        return depend.sort();
     },
 
     /**
