@@ -154,6 +154,21 @@ describe('Модуль Depend.', function() {
             ]);
         });
 
+        it('Указание зависимости от несуществующего модуля', function() {
+            var depend = new Depend([
+                    { name: 'a', require: ['unexist'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs({
+                    name: 'a',
+                    require: 'unexist'
+                });
+
+            depend.on('unexist', callback);
+            depend.sort();
+            assert.isTrue(callback1.calledOnce, 'инициируется событие зависимости от несуществующего модуля');
+        });
+
     });
 
     describe('Фильтрация модулей для заданного модуля', function() {
@@ -175,13 +190,13 @@ describe('Модуль Depend.', function() {
         it('Фильтрация одного модуля с множественными зависимостями', function() {
             assert.deepEqual(new Depend([
                 { name: 'a', require: ['b', 'c'] },
-                { name: 'b', require: ['c', 'd', 'unexist'] },
+                { name: 'b', require: ['c', 'd'] },
                 { name: 'c' },
                 { name: 'd' },
                 { name: 'e' }
             ]).filter('a'), [
                 { name: 'a', require: ['b', 'c'] },
-                { name: 'b', require: ['c', 'd', 'unexist'] },
+                { name: 'b', require: ['c', 'd'] },
                 { name: 'c' },
                 { name: 'd' }
             ]);
@@ -218,6 +233,45 @@ describe('Модуль Depend.', function() {
                 { name: 'd', require: ['g'] },
                 { name: 'g' }
             ]);
+        });
+
+        it('Фильтрация несуществующего модуля и с указанием зависимости от несуществующего модуля', function() {
+            var depend1 = new Depend([{ name: 'b' }]),
+                depend2 = new Depend([{ name: 'b', require: ['unexist'] }]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs({
+                    name: null,
+                    require: 'unexist'
+                }),
+                callback2 = callback.withArgs({
+                    name: 'b',
+                    require: 'unexist'
+                });
+
+            depend1.on('unexist', callback);
+            depend2.on('unexist', callback);
+
+            depend1.filter('unexist');
+            depend2.filter('b');
+
+            assert.isTrue(callback1.calledOnce, 'инициируется событие попытки фильтрации несуществующего модуля');
+            assert.isTrue(callback2.calledOnce, 'инициируется событие зависимости от несуществующего модуля');
+        });
+
+        it('Фильтрация и сортировка с указанием несуществующего модуля', function() {
+            var depend = new Depend([
+                    { name: 'a', require: ['unexist'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs({
+                    name: 'a',
+                    require: 'unexist'
+                });
+
+            depend.on('unexist', callback);
+            depend.filter('a');
+            depend.sort();
+            assert.isTrue(callback1.calledOnce, 'событие не должно повторяться для одного и того же модуля');
         });
 
     });

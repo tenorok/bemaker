@@ -34,6 +34,14 @@ function Depend(modules) {
      * @type {events.EventEmitter}
      */
     this._emitter = new Events();
+
+    /**
+     * Список имён обнаруженных несуществующих модулей.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this._unexistList = [];
 }
 
 Depend.prototype = {
@@ -96,9 +104,9 @@ Depend.prototype = {
     filter: function(name) {
         return this._modules.filter(
             typeof name === 'string'
-                ? this._filter(name, [])
+                ? this._filter(name, [], null)
                 : name.reduce(function(filteredNames, name) {
-                    return filteredNames.concat(this._filter(name, []));
+                    return filteredNames.concat(this._filter(name, [], null));
                 }.bind(this), [])
         ).get();
     },
@@ -109,6 +117,7 @@ Depend.prototype = {
      * @private
      * @param {Depend~Module} module Заданный модуль
      * @fires Depend#circle
+     * @fires Depend#unexist
      */
     _sort: function(module) {
         this._branch.push(module.name);
@@ -134,9 +143,9 @@ Depend.prototype = {
 
         (module.require || []).forEach(function(requireName) {
             var requireModule = this._modules.get(requireName);
-            if(requireModule) {
-                this._sort(requireModule);
-            }
+            requireModule
+                ? this._sort(requireModule)
+                : this._emitUnexist(requireName, module.name);
         }, this);
 
         if(!this._sorted.exists(module)) {
@@ -152,17 +161,51 @@ Depend.prototype = {
      * @private
      * @param {string} name Имя заданного модуля
      * @param {string[]} filteredNames Имена отфильтрованных модулей
+     * @param {string|null} parentName Имя зависимого модуля или null, если он отсутствует
+     * @fires Depend#unexist
      * @returns {string[]}
      */
-    _filter: function(name, filteredNames) {
+    _filter: function(name, filteredNames, parentName) {
         var requireModule = this._modules.get(name);
-        if(!requireModule) return filteredNames;
+        if(!requireModule) {
+            this._emitUnexist(name, parentName);
+            return filteredNames;
+        }
 
         filteredNames.push(requireModule.name);
         (requireModule.require || []).forEach(function(requireName) {
-            this._filter(requireName, filteredNames);
+            this._filter(requireName, filteredNames, name);
         }, this);
         return filteredNames;
+    },
+
+    /**
+     * Инициировать событие обнаружения несуществующего модуля.
+     *
+     * Отдельный метод необходим для предотвращения повторной инициации
+     * события по одному и тому же модулю при совместном использовании методов `filter` и `sort`.
+     *
+     * @private
+     * @param {string} require Имя несуществующего модуля
+     * @param {string|null} name Имя зависимого модуля или null, если он отсутствует
+     * @fires Depend#unexist
+     */
+    _emitUnexist: function(require, name) {
+        if(~this._unexistList.indexOf(require)) return;
+        this._unexistList.push(require);
+
+        /**
+         * Событие обнаружения несуществующего модуля.
+         *
+         * @event Depend#unexist
+         * @type {{}}
+         * @property {string|null} name Имя зависимого модуля или null, если он отсутствует
+         * @property {string} require Имя несуществующего модуля
+         */
+        this._emitter.emit('unexist', {
+            name: name,
+            require: require
+        });
     }
 
 };
