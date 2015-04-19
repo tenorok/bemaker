@@ -175,13 +175,13 @@ describe('Модуль Depend.', function() {
         it('Фильтрация одного модуля с множественными зависимостями', function() {
             assert.deepEqual(new Depend([
                 { name: 'a', require: ['b', 'c'] },
-                { name: 'b', require: ['c', 'd'] },
+                { name: 'b', require: ['c', 'd', 'unexist'] },
                 { name: 'c' },
                 { name: 'd' },
                 { name: 'e' }
             ]).filter('a'), [
                 { name: 'a', require: ['b', 'c'] },
-                { name: 'b', require: ['c', 'd'] },
+                { name: 'b', require: ['c', 'd', 'unexist'] },
                 { name: 'c' },
                 { name: 'd' }
             ]);

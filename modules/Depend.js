@@ -155,8 +155,11 @@ Depend.prototype = {
      * @returns {string[]}
      */
     _filter: function(name, filteredNames) {
-        filteredNames.push(this._modules.get(name).name);
-        (this._modules.get(name).require || []).forEach(function(requireName) {
+        var requireModule = this._modules.get(name);
+        if(!requireModule) return filteredNames;
+
+        filteredNames.push(requireModule.name);
+        (requireModule.require || []).forEach(function(requireName) {
             this._filter(requireName, filteredNames);
         }, this);
         return filteredNames;
