@@ -14,7 +14,7 @@ const fs = require('./fs'),
 /**
  * Модуль для объединения строк и содержимого файлов.
  *
- * @constructor
+ * @class
  * @param {Join~DataItem[]} [data] Данные
  */
 function Join(data) {

@@ -8,7 +8,7 @@
 /**
  * Модуль для хранения модулей.
  *
- * @constructor
+ * @class
  * @param {Pool~Module[]} [modules] Модули
  */
 function Pool(modules) {

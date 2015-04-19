@@ -116,6 +116,12 @@ commander
                     operation: 'write',
                     path: data.path
                 });
+            })
+            .on('circle', function(branch) {
+                log.warn({
+                    operation: 'circle',
+                    text: branch.join(' → ')
+                });
             });
 
         make.build().then(function() {
