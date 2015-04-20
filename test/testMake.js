@@ -528,11 +528,11 @@ describe('Модуль Make.', function() {
             });
     });
 
-    it('Метод sort должен инициировать событие circle для циркулярных зависимостей', function(done) {
+    it('Метод sort должен инициировать событие loop для циркулярных зависимостей', function(done) {
         var make = new Make({
             directories: [touch]
         });
-        make.on('circle', function(branch) {
+        make.on('loop', function(branch) {
             assert.lengthOf(branch, 3);
             // Наиболее вероятное значение: `['pen', 'pointer', 'pen']`, однако при задержках
             // на файловой системе может быть другой порядок: `['pointer', 'pen', 'pointer']`.

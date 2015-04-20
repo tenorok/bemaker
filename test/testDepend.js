@@ -5,7 +5,7 @@ const assert = require('chai').assert,
 
 describe('Модуль Depend.', function() {
 
-    describe('Сортировка по полю require.', function() {
+    describe('Метод sort.', function() {
 
         it('Один модуль зависит от другого', function() {
             assert.deepEqual(new Depend([
@@ -35,14 +35,14 @@ describe('Модуль Depend.', function() {
                 callback = sinon.stub(),
                 callback1 = callback.withArgs(['a', 'b', 'a']);
 
-            depend.on('circle', callback);
+            depend.on('loop', callback);
 
             assert.deepEqual(depend.sort(), [
                 { name: 'b', require: ['a'] },
                 { name: 'a', require: ['b'] }
             ]);
 
-            assert.equal(callback.callCount, 1, 'инициируется событие круговой зависимости');
+            assert.equal(callback.callCount, 1, 'инициируется событие циклической зависимости');
             assert.isTrue(callback1.calledOnce);
         });
 
@@ -59,7 +59,7 @@ describe('Модуль Depend.', function() {
                 callback1 = callback.withArgs(['a', 'e', 'f', 'a']),
                 callback2 = callback.withArgs(['b', 'c', 'd', 'b']);
 
-            depend.on('circle', callback);
+            depend.on('loop', callback);
 
             assert.deepEqual(depend.sort(), [
                 { name: 'f', require: ['a'] },
@@ -104,7 +104,7 @@ describe('Модуль Depend.', function() {
                 callback3 = callback.withArgs(['a', 'e', 'd', 'b', 'a']),
                 callback4 = callback.withArgs(['a', 'e', 'a']);
 
-            depend.on('circle', callback);
+            depend.on('loop', callback);
 
             assert.deepEqual(depend.sort(), [
                 { name: 'f', require: ['a'] },
@@ -171,7 +171,7 @@ describe('Модуль Depend.', function() {
 
     });
 
-    describe('Фильтрация модулей для заданного модуля', function() {
+    describe('Метод filter.', function() {
 
         it('Фильтрация одного модуля', function() {
             assert.deepEqual(new Depend([
@@ -215,6 +215,25 @@ describe('Модуль Depend.', function() {
                 { name: 'd' },
                 { name: 'e', require: ['c'] }
             ]);
+        });
+
+        it('Циклическая зависимость двух модулей', function() {
+            var depend = new Depend([
+                    { name: 'a', require: ['b'] },
+                    { name: 'b', require: ['a'] }
+                ]),
+                callback = sinon.stub(),
+                callback1 = callback.withArgs(['a', 'b', 'a']);
+
+            depend.on('loop', callback);
+
+            assert.deepEqual(depend.filter(['a', 'b']), [
+                { name: 'a', require: ['b'] },
+                { name: 'b', require: ['a'] }
+            ]);
+
+            assert.equal(callback.callCount, 1, 'инициируется событие циклической зависимости');
+            assert.isTrue(callback1.calledOnce);
         });
 
         it('Фильтрация нескольких модулей с множественными зависимостями', function() {

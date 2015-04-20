@@ -117,9 +117,9 @@ commander
                     path: data.path
                 });
             })
-            .on('circle', function(branch) {
+            .on('loop', function(branch) {
                 log.warn({
-                    operation: 'circle',
+                    operation: 'loop',
                     text: branch.join(' → ')
                 });
             });
