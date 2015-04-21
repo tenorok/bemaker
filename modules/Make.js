@@ -163,7 +163,8 @@ Make.prototype = {
     getBlocks: function() {
         return this._getBlocksList()
             .then(this._getLevelsFiles.bind(this))
-            .then(this._getBlocksDepends.bind(this));
+            .then(this._getBlocksDepends.bind(this))
+            .then(this._bindDependEvents.bind(this));
     },
 
     /**
@@ -176,7 +177,7 @@ Make.prototype = {
      */
     filter: function(blocks) {
         if(this._config.blocks) {
-            var pool = new Pool(new Depend(blocks).filter(this._config.blocks));
+            var pool = new Pool(this._depend.filter(this._config.blocks));
             pool.get().forEach(function(block) {
 
                 /**
@@ -199,7 +200,6 @@ Make.prototype = {
      * и их файлы по весу селекторов.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Depend#circle
      * @returns {Make~poolBlocks} Отсортированный список блоков
      */
     sort: function(blocks) {
@@ -210,19 +210,7 @@ Make.prototype = {
                 });
             });
         });
-        var depend = new Depend(blocks);
-        depend.on('circle', function() {
-
-            /**
-             * Прокси для события обнаружения циклической зависимости в модуле `Depend`.
-             * Передаёт список имён модулей в порядке зависимостей.
-             *
-             * @event Depend#circle
-             * @type {string[]}
-             */
-            this._emitter.emit.apply(this._emitter, ['circle'].concat(Array.prototype.slice.call(arguments)));
-        }.bind(this));
-        return depend.sort();
+        return this._depend.sort();
     },
 
     /**
@@ -300,6 +288,66 @@ Make.prototype = {
      */
     on: function(event, listener) {
         return this._emitter.on.call(this._emitter, event, listener);
+    },
+
+    /**
+     * Инициировать проксируемое событие.
+     *
+     * @private
+     * @param {string} event Имя события
+     * @param {Arguments} data Данные события
+     */
+    _emitProxyEvent: function(event, data) {
+        this._emitter.emit.apply(this._emitter, [event].concat(Array.prototype.slice.call(data)));
+    },
+
+    /**
+     * Создать единый экземпляр `Depend` и подписаться на его события для проксирования.
+     *
+     * @private
+     * @param {Make~poolBlocks} blocks Список блоков
+     * @fires Depend#loop
+     * @fires Depend#unexist
+     * @returns {Make~poolBlocks}
+     */
+    _bindDependEvents: function(blocks) {
+
+        /**
+         * Экземпляр модуля для работы с зависимостями.
+         *
+         * Необходим единый экземпляр для предотвращения повторной инициации
+         * событий при совместном использовании методов `filter` и `sort`.
+         *
+         * @private
+         * @type {Depend}
+         */
+        this._depend = new Depend(blocks);
+
+        this._depend.on('loop', function() {
+
+            /**
+             * Прокси для события обнаружения циклической зависимости в модуле `Depend`.
+             *
+             * @event Depend#loop
+             * @type {string[]} branch Список имён модулей в порядке зависимостей
+             */
+            this._emitProxyEvent('loop', arguments);
+        }.bind(this));
+
+        this._depend.on('unexist', function() {
+
+            /**
+             * Прокси для события обнаружения несуществующего модуля.
+             *
+             * @event Depend#unexist
+             * @type {{}}
+             * @property {string|null} name Имя зависимого модуля или null, если он отсутствует
+             * @property {string} require Имя несуществующего модуля
+             */
+            this._emitProxyEvent('unexist', arguments);
+        }.bind(this));
+
+        return blocks;
     },
 
     /**

@@ -117,10 +117,21 @@ commander
                     path: data.path
                 });
             })
-            .on('circle', function(branch) {
+            .on('loop', function(branch) {
                 log.warn({
-                    operation: 'circle',
+                    operation: 'loop',
                     text: branch.join(' → ')
+                });
+            })
+            .on('unexist', function(data) {
+                var blocks = [];
+                if(data.name) {
+                    blocks.push(data.name);
+                }
+                blocks.push(data.require);
+                log.warn({
+                    operation: 'unexist',
+                    text: blocks.join(' → ')
                 });
             });
 

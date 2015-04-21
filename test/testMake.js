@@ -1,6 +1,7 @@
 const fs = require('fs'),
     path = require('path'),
     assert = require('chai').assert,
+    sinon = require('sinon'),
     Selector = require('bemer').modules('Selector'),
     Make = require('../modules/Make'),
     Join = require('../modules/Join'),
@@ -528,20 +529,6 @@ describe('Модуль Make.', function() {
             });
     });
 
-    it('Метод sort должен инициировать событие circle для циркулярных зависимостей', function(done) {
-        var make = new Make({
-            directories: [touch]
-        });
-        make.on('circle', function(branch) {
-            assert.lengthOf(branch, 3);
-            // Наиболее вероятное значение: `['pen', 'pointer', 'pen']`, однако при задержках
-            // на файловой системе может быть другой порядок: `['pointer', 'pen', 'pointer']`.
-            assert.includeMembers(branch, ['pen', 'pointer']);
-            done();
-        });
-        make.getBlocks().then(make.sort.bind(make));
-    });
-
     it('Метод groupByExtensions', function(done) {
         var make = new Make({
             directories: [common, desktop]
@@ -691,6 +678,75 @@ describe('Модуль Make.', function() {
             );
             done();
         });
+    });
+
+    describe('События.', function() {
+
+        it('Метод sort должен инициировать событие loop для циклических зависимостей', function(done) {
+            var make = new Make({
+                    directories: [touch]
+                }),
+                callback = sinon.spy();
+
+            make.on('loop', function(branch) {
+                assert.lengthOf(branch, 3);
+                // Наиболее вероятное значение: `['pen', 'pointer', 'pen']`, однако при задержках
+                // на файловой системе может быть другой порядок: `['pointer', 'pen', 'pointer']`.
+                assert.includeMembers(branch, ['pen', 'pointer']);
+                callback();
+            });
+
+            make.getBlocks()
+                .then(make.sort.bind(make))
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    done();
+                });
+        });
+
+        it('Метод filter должен инициировать событие loop для циклических зависимостей', function(done) {
+            var make = new Make({
+                    directories: [touch],
+                    blocks: ['pointer']
+                }),
+                callback = sinon.spy(),
+                callback1 = callback.withArgs(['pointer', 'pen', 'pointer']);
+
+            make.on('loop', callback);
+
+            make.getBlocks()
+                .then(make.filter.bind(make))
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    assert.isTrue(callback1.calledOnce);
+                    done();
+                });
+        });
+
+        it('Методы sort и filter должны инициировать событие unexist без повторов', function(done) {
+            var make = new Make({
+                    directories: [touch],
+                    blocks: ['pen']
+                }),
+                callback = sinon.spy(),
+                callback1 = callback.withArgs({
+                    name: 'pen',
+                    require: 'unexist'
+                });
+
+            make.on('unexist', callback);
+
+            make.getBlocks()
+                .then(function(blocks) {
+                    make.sort(make.filter(blocks));
+                })
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    assert.isTrue(callback1.calledOnce);
+                    done();
+                });
+        });
+
     });
 
 });
