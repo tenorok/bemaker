@@ -66,11 +66,11 @@ Depend.prototype = {
     /**
      * Отсортировать модули по зависимостям.
      *
-     * @fires Depend#loop
-     * @fires Depend#unexist
      * @returns {Depend~Module[]}
      */
     sort: function() {
+        this._visited = [];
+        this._branch = [];
 
         /**
          * Хранилище отсортированных модулей.
@@ -79,9 +79,6 @@ Depend.prototype = {
          * @type {Pool}
          */
         this._sorted = new Pool();
-
-        this._visited = [];
-        this._branch = [];
 
         this._modules.get().forEach(this._sort, this);
 
@@ -93,12 +90,9 @@ Depend.prototype = {
      * или нескольких модулей по зависимостям.
      *
      * @param {string|string[]} name Имя заданного модуля или нескольких модулей
-     * @fires Depend#loop
-     * @fires Depend#unexist
      * @returns {Depend~Module[]}
      */
     filter: function(name) {
-
         this._visited = [];
         this._branch = [];
 
@@ -127,13 +121,9 @@ Depend.prototype = {
      *
      * @private
      * @param {Depend~Module} module Заданный модуль
-     * @fires Depend#loop
-     * @fires Depend#unexist
      */
     _sort: function(module) {
-        if(this._isVisited(module.name)) {
-            return;
-        }
+        if(this._isVisited(module.name)) return;
 
         (module.require || []).forEach(function(requireName) {
             var requireModule = this._modules.get(requireName);
@@ -156,14 +146,10 @@ Depend.prototype = {
      * @param {string} name Имя заданного модуля
      * @param {string[]} filteredNames Имена отфильтрованных модулей
      * @param {string|null} parentName Имя зависимого модуля или null, если он отсутствует
-     * @fires Depend#loop
-     * @fires Depend#unexist
      * @returns {string[]}
      */
     _filter: function(name, filteredNames, parentName) {
-        if(this._isVisited(name)) {
-            return filteredNames;
-        }
+        if(this._isVisited(name)) return filteredNames;
 
         var requireModule = this._modules.get(name);
         if(!requireModule) {
@@ -197,10 +183,9 @@ Depend.prototype = {
 
                 /**
                  * Событие обнаружения циклической зависимости.
-                 * Передаёт список имён модулей в порядке зависимостей.
                  *
                  * @event Depend#loop
-                 * @type {string[]}
+                 * @type {string[]} branch Список имён модулей в порядке зависимостей
                  */
                 this._emitter.emit('loop', this._branch);
             }
