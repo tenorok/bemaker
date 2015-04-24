@@ -32,10 +32,11 @@ const path = require('path'),
  * предваряющей и последующей строки для каждого файла.
  *
  * @callback Make~beforeAfterCallback
- * @param {number} index Индекс файла
  * @param {string} absPath Абсолютный путь до файла
  * @param {string} relPath Относительный путь до файла
  * @param {string} extname Полное расширение файла (например для `file.ie.css` будет `.ie.css`)
+ * @param {number} index Индекс файла
+ * @param {number} length Количество файлов
  */
 
 /**
@@ -362,16 +363,16 @@ Make.prototype = {
             cwd = this._config.cwd;
 
         ['before', 'after'].forEach(function(place) {
-            if(config[place]) {
-                if(typeof config[place] === 'function') {
-                    group[place + 'EachFile'](function(i, file) {
-                        return config[place].call(this, i, file, path.relative(cwd, file), extname);
-                    });
-                } else {
-                    group[place + 'EachFile'](function(i, file) {
-                        return '/* ' + place + ': ' + path.relative(cwd, file) + ' */\n';
-                    });
-                }
+            if(!config[place]) return;
+
+            if(typeof config[place] === 'function') {
+                group[place + 'EachFile'](function(item, index, length) {
+                    return config[place].call(this, item.file, path.relative(cwd, item.file), extname, index, length);
+                });
+            } else {
+                group[place + 'EachFile'](function(item) {
+                    return '/* ' + place + ': ' + path.relative(cwd, item.file) + ' */\n';
+                });
             }
         });
 

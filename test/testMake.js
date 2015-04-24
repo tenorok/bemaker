@@ -657,18 +657,20 @@ describe('Модуль Make.', function() {
             outname: 'beforeAfter',
             directories: [desktop],
             extensions: ['.ie.css'],
-            before: function(i, abs, rel,  extname) {
-                assert.equal(i, 0);
+            before: function(abs, rel,  ext, i, len) {
                 assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
                 assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
-                assert.equal(extname, '.ie.css');
+                assert.equal(ext, '.ie.css');
+                assert.equal(i, 0);
+                assert.equal(len, 1);
                 return '/* before */\n';
             },
-            after: function(i, abs, rel,  extname) {
-                assert.equal(i, 0);
+            after: function(abs, rel,  ext, i, len) {
                 assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
                 assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
-                assert.equal(extname, '.ie.css');
+                assert.equal(ext, '.ie.css');
+                assert.equal(i, 0);
+                assert.equal(len, 1);
                 return '/* after */\n';1
             }
         }).build().then(function() {
