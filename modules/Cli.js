@@ -105,7 +105,7 @@ Cli.prototype = {
      * Получить содержимое файла.
      *
      * @param {string} [configPath] Относительный путь
-     * @fires Cli#config-not-found
+     * @emits Cli#config-not-found
      * @returns {Cli|{}}
      */
     config: function(configPath) {

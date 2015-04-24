@@ -256,7 +256,7 @@ Join.prototype = {
      *
      * @private
      * @param {string|function} string Дополнительная строка
-     * @param {(Join~DataItem|number)[]} [data] Дополнительные данные для передачи аргументов в функцию
+     * @param {Array.<Join~DataItem|number>} [data] Дополнительные данные для передачи аргументов в функцию
      * @returns {string}
      */
     _getAdditionalString: function(string, data) {

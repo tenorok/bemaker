@@ -173,7 +173,7 @@ Make.prototype = {
      * на основании поля `blocks` в опциях сборки.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Make#filter
+     * @emits Make#filter
      * @returns {Make~poolBlocks}
      */
     filter: function(blocks) {
@@ -218,7 +218,7 @@ Make.prototype = {
      * Сгруппировать файлы блоков по расширениям.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Make#extension
+     * @emits Make#extension
      * @returns {Make~groupsByExtensions}
      */
     groupByExtensions: function(blocks) {
@@ -249,7 +249,7 @@ Make.prototype = {
      * Сохранить файлы по расширениям.
      *
      * @param {Make~groupsByExtensions} groups Файлы блоков по расширениям
-     * @fires Make#save
+     * @emits Make#save
      * @returns {Promise} Make~contentByExtensions
      */
     writeFilesByExtensions: function(groups) {
@@ -307,8 +307,8 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Depend#loop
-     * @fires Depend#unexist
+     * @emits Depend#loop
+     * @emits Depend#unexist
      * @returns {Make~poolBlocks}
      */
     _bindDependEvents: function(blocks) {
@@ -330,7 +330,7 @@ Make.prototype = {
              * Прокси для события обнаружения циклической зависимости в модуле `Depend`.
              *
              * @event Depend#loop
-             * @type {string[]} branch Список имён модулей в порядке зависимостей
+             * @type {Depend~LoopBranch}
              */
             this._emitProxyEvent('loop', arguments);
         }.bind(this));
@@ -354,6 +354,7 @@ Make.prototype = {
     /**
      * Установить предваряющую и последующую строки вокруг каждого файла.
      *
+     * @private
      * @param {Join} group Группа файлов с единым расширением
      * @param {string} extname Расширение группы файлов
      * @returns {Join} Модифицированный экземпляр
@@ -384,8 +385,8 @@ Make.prototype = {
      * на которых они присутствуют.
      *
      * @private
-     * @fires Make#level
-     * @fires Make#block
+     * @emits Make#level
+     * @emits Make#block
      * @returns {Promise} Make~poolBlocksList
      */
     _getBlocksList: function() {
@@ -428,7 +429,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
-     * @fires Make#file
+     * @emits Make#file
      * @returns {Promise} Make~poolBlocksLevelsFiles
      */
     _getLevelsFiles: function(blocks) {
@@ -476,7 +477,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksLevelsFiles} blocks Список блоков, их уровни переопределения и файлы
-     * @fires Make#depend
+     * @emits Make#depend
      * @returns {Promise} Make~poolBlocks
      */
     _getBlocksDepends: function(blocks) {
