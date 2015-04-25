@@ -1,4 +1,4 @@
-const fs = require('fs'),
+const fs = require('fs-extra'),
     path = require('path'),
     assert = require('chai').assert,
     sinon = require('sinon'),
@@ -8,20 +8,27 @@ const fs = require('fs'),
 
     tmp = path.join(__dirname, 'fixtures/tmp/'),
     tmpAll = {
-        js: path.join(__dirname, 'fixtures/tmp/all.js'),
-        css: path.join(__dirname, 'fixtures/tmp/all.css'),
-        iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css'),
-        beforeAfter: path.join(__dirname, 'fixtures/tmp/beforeAfter.ie.css')
+        js: path.join(tmp, 'all.js'),
+        css: path.join(tmp, 'all.css'),
+        iecss: path.join(tmp, 'all.ie.css'),
+        beforeAfter: path.join(tmp, 'beforeAfter.ie.css')
     },
+
+    unexistRoot = path.join(tmp, 'wrap/'),
+    unexistDir = path.join(tmp, 'wrap/nested/'),
+    unexistIECss = path.join(unexistDir, 'all.ie.css'),
+
+    levels = path.join(__dirname, 'fixtures/levels/'),
     standardAll = {
-        js: path.join(__dirname, 'fixtures/levels/build/all.js'),
-        css: path.join(__dirname, 'fixtures/levels/build/all.css'),
-        iecss: path.join(__dirname, 'fixtures/levels/build/all.ie.css'),
-        beforeAfter: path.join(__dirname, 'fixtures/levels/build/beforeAfter.ie.css')
+        js: path.join(levels, 'build/all.js'),
+        css: path.join(levels, 'build/all.css'),
+        iecss: path.join(levels, 'build/all.ie.css'),
+        beforeAfter: path.join(levels, 'build/beforeAfter.ie.css')
     },
-    common = path.join(__dirname, 'fixtures/levels/common/'),
-    desktop = path.join(__dirname, 'fixtures/levels/desktop/'),
-    touch = path.join(__dirname, 'fixtures/levels/touch/');
+
+    common = path.join(levels, 'common/'),
+    desktop = path.join(levels, 'desktop/'),
+    touch = path.join(levels, 'touch/');
 
 describe('Модуль Make.', function() {
 
@@ -31,6 +38,9 @@ describe('Модуль Make.', function() {
                 fs.unlinkSync(tmpAll[extname]);
             }
         });
+        if(fs.existsSync(unexistRoot)) {
+            fs.removeSync(unexistRoot);
+        }
     });
 
     it('Метод getBlocks', function(done) {
@@ -628,6 +638,26 @@ describe('Модуль Make.', function() {
                 assert.equal(tmp.js, standard.js);
                 assert.equal(tmp.css, standard.css);
                 assert.equal(tmp.iecss, standard.iecss);
+                done();
+            });
+    });
+
+    it('Метод writeFilesByExtensions должен создавать целевую директорию, если она не существует', function(done) {
+        var make = new Make({
+            outdir: unexistDir,
+            outname: 'all',
+            directories: [desktop],
+            extensions: ['.ie.css']
+        });
+        make.getBlocks()
+            .then(make.sort.bind(make))
+            .then(make.groupByExtensions.bind(make))
+            .then(make.writeFilesByExtensions.bind(make))
+            .then(function() {
+                assert.equal(
+                    fs.readFileSync(unexistIECss, 'utf-8'),
+                    fs.readFileSync(standardAll.iecss, 'utf-8')
+                );
                 done();
             });
     });

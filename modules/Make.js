@@ -15,7 +15,7 @@ const path = require('path'),
  * Опции сборки.
  *
  * @typedef {{}} Make~Config
- * @property {string} outdir Директория для сохранения файлов
+ * @property {string} outdir Директория для сохранения файлов (будет создана, если она не существует)
  * @property {string} outname Имя для сохраняемых файлов
  * @property {string[]} directories Директории для поиска блоков (уровни переопределения)
  * @property {string[]} [extensions] Расширения файлов к сборке, по умолчанию собираются все найденные расширения
@@ -248,6 +248,8 @@ Make.prototype = {
     /**
      * Сохранить файлы по расширениям.
      *
+     * Директория для сохранения файлов будет создана, если она не существует.
+     *
      * @param {Make~groupsByExtensions} groups Файлы блоков по расширениям
      * @emits Make#save
      * @returns {Promise} Make~contentByExtensions
@@ -262,7 +264,9 @@ Make.prototype = {
             .then(function() {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
                     var filePath = path.join(this._config.outdir, this._config.outname + extname);
-                    promises.push(fs.fsAsync.writeFileAsync(filePath, content[extname]));
+                    promises.push(fs.fsAsync.mkdirsAsync(this._config.outdir).then(function() {
+                        return fs.fsAsync.writeFileAsync(filePath, content[extname]);
+                    }));
 
                     /**
                      * Событие сохранения собранного для расширения файла.
