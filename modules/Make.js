@@ -429,7 +429,7 @@ Make.prototype = {
     },
 
     /**
-     * Получить файлы блоков на каждом уровне переопределения.
+     * Получить файлы и символьные ссылки блоков на каждом уровне переопределения.
      *
      * @private
      * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
@@ -440,36 +440,41 @@ Make.prototype = {
         var emitter = this._emitter;
         return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
             return promises.concat(block.levels.reduce(function(promises, level, levelIndex) {
-                return promises.concat(new Walk(path.join(level.path, block.name)).filesRecur().spread(function(list) {
-                    blocks.get()[blockIndex].levels[levelIndex].files =
-                        list.names.reduce(function(files, fileName, fileIndex) {
-                            var extname = '.' + fileName.split('.').slice(1).join('.'),
-                                basename = path.basename(fileName, extname),
-                                selector = new Selector(basename),
-                                filePath = list.absolute[fileIndex];
+                return promises.concat(new Walk(path.join(level.path, block.name))
+                    .listRecur(function(name, stats) {
+                        return stats.isFile() || stats.isSymbolicLink();
+                    })
+                    .spread(function(list) {
+                        blocks.get()[blockIndex].levels[levelIndex].files =
+                            list.names.reduce(function(files, fileName, fileIndex) {
+                                var extname = '.' + fileName.split('.').slice(1).join('.'),
+                                    basename = path.basename(fileName, extname),
+                                    selector = new Selector(basename),
+                                    filePath = list.absolute[fileIndex];
 
-                            if(!selector.block()) {
-                                selector.block(block.name);
-                            }
+                                if(!selector.block()) {
+                                    selector.block(block.name);
+                                }
 
-                            /**
-                             * Событие чтения файла блока.
-                             *
-                             * @event Make#file
-                             * @type {{}}
-                             * @property {string} path Путь до файла
-                             */
-                            emitter.emit('file', { path: filePath });
+                                /**
+                                 * Событие чтения файла блока.
+                                 *
+                                 * @event Make#file
+                                 * @type {{}}
+                                 * @property {string} path Путь до файла
+                                 */
+                                emitter.emit('file', { path: filePath });
 
-                            files.push({
-                                basename: basename,
-                                extname: extname,
-                                path: filePath,
-                                selector: selector
-                            });
-                            return files;
-                        }, []);
-                }));
+                                files.push({
+                                    basename: basename,
+                                    extname: extname,
+                                    path: filePath,
+                                    selector: selector
+                                });
+                                return files;
+                            }, []);
+                    })
+                );
             }, []));
         }, [])).then(function() {
                 return blocks;
