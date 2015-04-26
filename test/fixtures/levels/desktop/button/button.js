@@ -1,5 +1,1 @@
-/**
- * @bemaker checkbox
- */
-
-function buttonDesktop() {}
+../../touch/button/button.js

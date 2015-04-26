@@ -116,6 +116,23 @@ commander
                     operation: 'write',
                     path: data.path
                 });
+            })
+            .on('loop', function(branch) {
+                log.warn({
+                    operation: 'loop',
+                    text: branch.join(' → ')
+                });
+            })
+            .on('unexist', function(data) {
+                var blocks = [];
+                if(data.name) {
+                    blocks.push(data.name);
+                }
+                blocks.push(data.require);
+                log.warn({
+                    operation: 'unexist',
+                    text: blocks.join(' → ')
+                });
             });
 
         make.build().then(function() {

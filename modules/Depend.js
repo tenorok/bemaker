@@ -1,4 +1,6 @@
-const jsdocParser = require('comment-parser'),
+const Events = require('events').EventEmitter,
+
+    jsdocParser = require('comment-parser'),
     Pool = require('./Pool');
 
 /**
@@ -12,7 +14,7 @@ const jsdocParser = require('comment-parser'),
 /**
  * Модуль для работы с зависимостями.
  *
- * @constructor
+ * @class
  * @param {Depend~Module[]|Pool} modules Модули
  */
 function Depend(modules) {
@@ -26,12 +28,37 @@ function Depend(modules) {
     this._modules = modules instanceof Pool ? modules : new Pool(modules);
 
     /**
-     * Хранилище отсортированных модулей.
+     * Экземпляр событийного модуля.
      *
      * @private
-     * @type {Pool}
+     * @type {events.EventEmitter}
      */
-    this._sorted = new Pool();
+    this._emitter = new Events();
+
+    /**
+     * Список имён обнаруженных несуществующих модулей.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this._unexistList = [];
+
+    /**
+     * Список модулей, посещённых во время сортировки и фильтрации.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this._visited = [];
+
+    /**
+     * Список модулей всевозможных ветвей зависимостей.
+     * Для отслеживания и фиксации рекурсивных зависимостей.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this._branch = [];
 }
 
 Depend.prototype = {
@@ -42,43 +69,20 @@ Depend.prototype = {
      * @returns {Depend~Module[]}
      */
     sort: function() {
-        var modules = this._modules,
-            sorted = this._sorted;
+        this._visited = [];
+        this._branch = [];
 
-        modules.get().forEach(function(module) {
-            var require = module.require || [];
+        /**
+         * Хранилище отсортированных модулей.
+         *
+         * @private
+         * @type {Pool}
+         */
+        this._sorted = new Pool();
 
-            if(!sorted.exists(module)) {
-                require.forEach(function(requireName) {
-                    if(!sorted.exists(requireName)) {
-                        var requireModule = modules.get(requireName);
-                        if(requireModule) {
-                            sorted.push(requireModule);
-                        }
-                    }
-                }, this);
+        this._modules.get().forEach(this._sort, this);
 
-                sorted.push(module);
-            } else {
-                require.forEach(function(requireName) {
-                    if(!sorted.exists(requireName)) {
-                        var requireModule = modules.get(requireName);
-                        if(requireModule) {
-                            sorted.unshift(requireModule);
-                        }
-                        return;
-                    }
-
-                    var moduleIndex = sorted.indexOf(module.name);
-                    if(sorted.indexOf(requireName) > moduleIndex) {
-                        sorted.move(requireName, moduleIndex);
-                    }
-                }, this);
-            }
-
-        }, this);
-
-        return sorted.get();
+        return this._sorted.get();
     },
 
     /**
@@ -89,13 +93,50 @@ Depend.prototype = {
      * @returns {Depend~Module[]}
      */
     filter: function(name) {
+        this._visited = [];
+        this._branch = [];
+
         return this._modules.filter(
             typeof name === 'string'
-                ? this._filter(name, [])
+                ? this._filter(name, [], null)
                 : name.reduce(function(filteredNames, name) {
-                    return filteredNames.concat(this._filter(name, []));
+                    return filteredNames.concat(this._filter(name, [], null));
                 }.bind(this), [])
         ).get();
+    },
+
+    /**
+     * Подписаться на события модуля.
+     *
+     * @param {string} event Имя события
+     * @param {function} listener Колбек
+     * @returns {events.EventEmitter}
+     */
+    on: function(event, listener) {
+        return this._emitter.on.call(this._emitter, event, listener);
+    },
+
+    /**
+     * Рекурсивно отсортировать модули по зависимостям для заданного модуля.
+     *
+     * @private
+     * @param {Depend~Module} module Заданный модуль
+     */
+    _sort: function(module) {
+        if(this._isVisited(module.name)) return;
+
+        (module.require || []).forEach(function(requireName) {
+            var requireModule = this._modules.get(requireName);
+            requireModule
+                ? this._sort(requireModule)
+                : this._emitUnexist(requireName, module.name);
+        }, this);
+
+        if(!this._sorted.exists(module)) {
+            this._sorted.push(module);
+        }
+
+        this._branch.pop();
     },
 
     /**
@@ -104,14 +145,93 @@ Depend.prototype = {
      * @private
      * @param {string} name Имя заданного модуля
      * @param {string[]} filteredNames Имена отфильтрованных модулей
+     * @param {string|null} parentName Имя зависимого модуля или null, если он отсутствует
      * @returns {string[]}
      */
-    _filter: function(name, filteredNames) {
-        filteredNames.push(this._modules.get(name).name);
-        (this._modules.get(name).require || []).forEach(function(requireName) {
-            this._filter(requireName, filteredNames);
+    _filter: function(name, filteredNames, parentName) {
+        if(this._isVisited(name)) return filteredNames;
+
+        var requireModule = this._modules.get(name);
+        if(!requireModule) {
+            this._emitUnexist(name, parentName);
+            return filteredNames;
+        }
+
+        filteredNames.push(requireModule.name);
+        (requireModule.require || []).forEach(function(requireName) {
+            this._filter(requireName, filteredNames, name);
         }, this);
+
+        this._branch.pop();
+
         return filteredNames;
+    },
+
+    /**
+     * Проверить факт посещения модуля с указанным именем из рекурсивных методов.
+     *
+     * @private
+     * @param {string} name Имя модуля
+     * @emits Depend#loop
+     * @returns {boolean}
+     */
+    _isVisited: function(name) {
+        this._branch.push(name);
+
+        if(~this._visited.indexOf(name)) {
+            if(this._branch.length > 1 && this._branch[0] === name) {
+
+                /**
+                 * Список имён модулей в порядке зависимостей
+                 * для события обнаружения циклической зависимости.
+                 *
+                 * @typedef {string[]} Depend~LoopBranch
+                 */
+
+                /**
+                 * Событие обнаружения циклической зависимости.
+                 *
+                 * @event Depend#loop
+                 * @type {Depend~LoopBranch}
+                 */
+                this._emitter.emit('loop', this._branch);
+            }
+
+            this._branch.pop();
+            return true;
+        }
+
+        this._visited.push(name);
+        return false;
+    },
+
+    /**
+     * Инициировать событие обнаружения несуществующего модуля.
+     *
+     * Отдельный метод необходим для предотвращения повторной инициации
+     * события по одному и тому же модулю при совместном использовании методов `filter` и `sort`.
+     *
+     * @private
+     * @param {string} require Имя несуществующего модуля
+     * @param {string|null} name Имя зависимого модуля или null, если он отсутствует
+     * @emits Depend#unexist
+     */
+    _emitUnexist: function(require, name) {
+        if(~this._unexistList.indexOf(require)) return;
+        this._unexistList.push(require);
+
+        /**
+         * Событие обнаружения несуществующего модуля.
+         *
+         * @event Depend#unexist
+         * @type {{}}
+         * @property {string|null} name Имя зависимого модуля или null, если он отсутствует
+         * @property {string} require Имя несуществующего модуля
+         */
+        this._emitter.emit('unexist', {
+            name: name,
+            require: require
+        });
     }
 
 };

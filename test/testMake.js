@@ -1,25 +1,34 @@
-const fs = require('fs'),
+const fs = require('fs-extra'),
     path = require('path'),
     assert = require('chai').assert,
+    sinon = require('sinon'),
     Selector = require('bemer').modules('Selector'),
     Make = require('../modules/Make'),
     Join = require('../modules/Join'),
 
     tmp = path.join(__dirname, 'fixtures/tmp/'),
     tmpAll = {
-        js: path.join(__dirname, 'fixtures/tmp/all.js'),
-        css: path.join(__dirname, 'fixtures/tmp/all.css'),
-        iecss: path.join(__dirname, 'fixtures/tmp/all.ie.css'),
-        beforeAfter: path.join(__dirname, 'fixtures/tmp/beforeAfter.ie.css')
+        js: path.join(tmp, 'all.js'),
+        css: path.join(tmp, 'all.css'),
+        iecss: path.join(tmp, 'all.ie.css'),
+        beforeAfter: path.join(tmp, 'beforeAfter.ie.css')
     },
+
+    unexistRoot = path.join(tmp, 'wrap/'),
+    unexistDir = path.join(tmp, 'wrap/nested/'),
+    unexistIECss = path.join(unexistDir, 'all.ie.css'),
+
+    levels = path.join(__dirname, 'fixtures/levels/'),
     standardAll = {
-        js: path.join(__dirname, 'fixtures/levels/build/all.js'),
-        css: path.join(__dirname, 'fixtures/levels/build/all.css'),
-        iecss: path.join(__dirname, 'fixtures/levels/build/all.ie.css'),
-        beforeAfter: path.join(__dirname, 'fixtures/levels/build/beforeAfter.ie.css')
+        js: path.join(levels, 'build/all.js'),
+        css: path.join(levels, 'build/all.css'),
+        iecss: path.join(levels, 'build/all.ie.css'),
+        beforeAfter: path.join(levels, 'build/beforeAfter.ie.css')
     },
-    common = path.join(__dirname, 'fixtures/levels/common/'),
-    desktop = path.join(__dirname, 'fixtures/levels/desktop/');
+
+    common = path.join(levels, 'common/'),
+    desktop = path.join(levels, 'desktop/'),
+    touch = path.join(levels, 'touch/');
 
 describe('Модуль Make.', function() {
 
@@ -29,6 +38,9 @@ describe('Модуль Make.', function() {
                 fs.unlinkSync(tmpAll[extname]);
             }
         });
+        if(fs.existsSync(unexistRoot)) {
+            fs.removeSync(unexistRoot);
+        }
     });
 
     it('Метод getBlocks', function(done) {
@@ -630,6 +642,26 @@ describe('Модуль Make.', function() {
             });
     });
 
+    it('Метод writeFilesByExtensions должен создавать целевую директорию, если она не существует', function(done) {
+        var make = new Make({
+            outdir: unexistDir,
+            outname: 'all',
+            directories: [desktop],
+            extensions: ['.ie.css']
+        });
+        make.getBlocks()
+            .then(make.sort.bind(make))
+            .then(make.groupByExtensions.bind(make))
+            .then(make.writeFilesByExtensions.bind(make))
+            .then(function() {
+                assert.equal(
+                    fs.readFileSync(unexistIECss, 'utf-8'),
+                    fs.readFileSync(standardAll.iecss, 'utf-8')
+                );
+                done();
+            });
+    });
+
     it('Метод build', function(done) {
         new Make({
             outdir: tmp,
@@ -655,18 +687,20 @@ describe('Модуль Make.', function() {
             outname: 'beforeAfter',
             directories: [desktop],
             extensions: ['.ie.css'],
-            before: function(i, abs, rel,  extname) {
-                assert.equal(i, 0);
+            before: function(abs, rel,  ext, i, len) {
                 assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
                 assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
-                assert.equal(extname, '.ie.css');
+                assert.equal(ext, '.ie.css');
+                assert.equal(i, 0);
+                assert.equal(len, 1);
                 return '/* before */\n';
             },
-            after: function(i, abs, rel,  extname) {
-                assert.equal(i, 0);
+            after: function(abs, rel,  ext, i, len) {
                 assert.equal(abs, path.join(__dirname, 'fixtures/levels/desktop/button/button.ie.css'));
                 assert.equal(rel, '../test/fixtures/levels/desktop/button/button.ie.css');
-                assert.equal(extname, '.ie.css');
+                assert.equal(ext, '.ie.css');
+                assert.equal(i, 0);
+                assert.equal(len, 1);
                 return '/* after */\n';1
             }
         }).build().then(function() {
@@ -676,6 +710,75 @@ describe('Модуль Make.', function() {
             );
             done();
         });
+    });
+
+    describe('События.', function() {
+
+        it('Метод sort должен инициировать событие loop для циклических зависимостей', function(done) {
+            var make = new Make({
+                    directories: [touch]
+                }),
+                callback = sinon.spy();
+
+            make.on('loop', function(branch) {
+                assert.lengthOf(branch, 3);
+                // Наиболее вероятное значение: `['pen', 'pointer', 'pen']`, однако при задержках
+                // на файловой системе может быть другой порядок: `['pointer', 'pen', 'pointer']`.
+                assert.includeMembers(branch, ['pen', 'pointer']);
+                callback();
+            });
+
+            make.getBlocks()
+                .then(make.sort.bind(make))
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    done();
+                });
+        });
+
+        it('Метод filter должен инициировать событие loop для циклических зависимостей', function(done) {
+            var make = new Make({
+                    directories: [touch],
+                    blocks: ['pointer']
+                }),
+                callback = sinon.spy(),
+                callback1 = callback.withArgs(['pointer', 'pen', 'pointer']);
+
+            make.on('loop', callback);
+
+            make.getBlocks()
+                .then(make.filter.bind(make))
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    assert.isTrue(callback1.calledOnce);
+                    done();
+                });
+        });
+
+        it('Методы sort и filter должны инициировать событие unexist без повторов', function(done) {
+            var make = new Make({
+                    directories: [touch],
+                    blocks: ['pen']
+                }),
+                callback = sinon.spy(),
+                callback1 = callback.withArgs({
+                    name: 'pen',
+                    require: 'unexist'
+                });
+
+            make.on('unexist', callback);
+
+            make.getBlocks()
+                .then(function(blocks) {
+                    make.sort(make.filter(blocks));
+                })
+                .then(function() {
+                    assert.equal(callback.callCount, 1, 'событие инициируется один раз');
+                    assert.isTrue(callback1.calledOnce);
+                    done();
+                });
+        });
+
     });
 
 });
