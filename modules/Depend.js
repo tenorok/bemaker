@@ -172,7 +172,7 @@ Depend.prototype = {
      *
      * @private
      * @param {string} name Имя модуля
-     * @fires Depend#loop
+     * @emits Depend#loop
      * @returns {boolean}
      */
     _isVisited: function(name) {
@@ -182,10 +182,17 @@ Depend.prototype = {
             if(this._branch.length > 1 && this._branch[0] === name) {
 
                 /**
+                 * Список имён модулей в порядке зависимостей
+                 * для события обнаружения циклической зависимости.
+                 *
+                 * @typedef {string[]} Depend~LoopBranch
+                 */
+
+                /**
                  * Событие обнаружения циклической зависимости.
                  *
                  * @event Depend#loop
-                 * @type {string[]} branch Список имён модулей в порядке зависимостей
+                 * @type {Depend~LoopBranch}
                  */
                 this._emitter.emit('loop', this._branch);
             }
@@ -207,7 +214,7 @@ Depend.prototype = {
      * @private
      * @param {string} require Имя несуществующего модуля
      * @param {string|null} name Имя зависимого модуля или null, если он отсутствует
-     * @fires Depend#unexist
+     * @emits Depend#unexist
      */
     _emitUnexist: function(require, name) {
         if(~this._unexistList.indexOf(require)) return;

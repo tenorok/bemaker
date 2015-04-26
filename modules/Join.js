@@ -140,7 +140,9 @@ Join.prototype = {
      * предваряющей и последующей строки для каждого элемента.
      *
      * @callback Join~beforeAfterEachCallback
+     * @param {Join~DataItem} item Элемент данных
      * @param {number} index Индекс элемента
+     * @param {number} length Количество элементов
      */
 
     /**
@@ -159,8 +161,9 @@ Join.prototype = {
      * предваряющей и последующей строки для каждого файла.
      *
      * @callback Join~beforeAfterEachFileCallback
+     * @param {Join~DataItem} item Элемент данных в виде хеш-карты файла
      * @param {number} index Индекс файла
-     * @param {string} file Путь до файла
+     * @param {number} length Количество файлов
      */
 
     /**
@@ -218,23 +221,27 @@ Join.prototype = {
             var content = [
                     this._getAdditionalString(this._before)
                 ],
-                indexFile = 0;
+                length = this._data.length,
+                indexFile = 0,
+                lengthFile = typeof this._beforeEachFile === 'function' || typeof this._afterEachFile === 'function'
+                    ? this._data.filter(function(item) { return typeof item !== 'string'; }).length
+                    : null;
 
-            Promise.all(this._data.reduce(function(content, part, index) {
+            Promise.all(this._data.reduce(function(content, item, index) {
 
-                content.push(this._getAdditionalString(this._beforeEach, [index]));
+                content.push(this._getAdditionalString(this._beforeEach, [item, index, length]));
 
-                if(typeof part === 'string') {
-                    content.push(part);
+                if(typeof item === 'string') {
+                    content.push(item);
                 } else {
                     content.push(
-                        this._getAdditionalString(this._beforeEachFile, [indexFile, part.file]),
-                        part.content || fs.readFile(part.file),
-                        this._getAdditionalString(this._afterEachFile, [indexFile++, part.file])
+                        this._getAdditionalString(this._beforeEachFile, [item, indexFile, lengthFile]),
+                        item.content || fs.readFile(item.file),
+                        this._getAdditionalString(this._afterEachFile, [item, indexFile++, lengthFile])
                     );
                 }
 
-                content.push(this._getAdditionalString(this._afterEach, [index]));
+                content.push(this._getAdditionalString(this._afterEach, [item, index, length]));
 
                 return content;
             }.bind(this), content)).then(function(content) {
@@ -249,7 +256,7 @@ Join.prototype = {
      *
      * @private
      * @param {string|function} string Дополнительная строка
-     * @param {array} [data] Дополнительные данные для передачи аргументов в функцию
+     * @param {Array.<Join~DataItem|number>} [data] Дополнительные данные для передачи аргументов в функцию
      * @returns {string}
      */
     _getAdditionalString: function(string, data) {

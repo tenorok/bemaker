@@ -137,10 +137,14 @@ describe('Модуль Join.', function() {
             });
 
             it('Функцией', function(done) {
-                new Join(['a', 'b']).beforeEach(function(i) { return i + ')'; }).toString().then(function(content) {
-                    assert.equal(content, '0)a1)b');
-                    done();
-                }).catch(function(err) {
+                new Join(['a', 'b', { file: 'c', content: 'c' }])
+                    .beforeEach(function(item, index, length) {
+                        var content = typeof item === 'string' ? item : item.content;
+                        return '(' + index + ':' + length + ')' + content + ':';
+                    }).toString().then(function(content) {
+                        assert.equal(content, '(0:3)a:a(1:3)b:b(2:3)c:c');
+                        done();
+                    }).catch(function(err) {
                         done(err);
                     });
             });
@@ -167,10 +171,10 @@ describe('Модуль Join.', function() {
                     { file: files.a },
                     'c',
                     { file: files.b }
-                ]).beforeEachFile(function(i, file) {
-                        return i + ':' + file + ')';
+                ]).beforeEachFile(function(item, index, length) {
+                        return '(' + index + ':' + length + ')' + item.file + ':';
                     }).toString().then(function(content) {
-                        assert.equal(content, '0:' + files.a + ')var a;\nc1:' + files.b + ')var b;\n');
+                        assert.equal(content, '(0:2)' + files.a + ':var a;\nc(1:2)' + files.b + ':var b;\n');
                         done();
                     }).catch(function(err) {
                         done(err);
@@ -213,10 +217,14 @@ describe('Модуль Join.', function() {
             });
 
             it('Функцией', function(done) {
-                new Join(['a', 'b']).afterEach(function(i) { return '(' + i; }).toString().then(function(content) {
-                    assert.equal(content, 'a(0b(1');
-                    done();
-                }).catch(function(err) {
+                new Join(['a', { file: 'b', content: 'b' }, 'c'])
+                    .afterEach(function(item, index, length) {
+                        var content = typeof item === 'string' ? item : item.content;
+                        return ':' + content + '(' + index + ':' + length + ')';
+                    }).toString().then(function(content) {
+                        assert.equal(content, 'a:a(0:3)b:b(1:3)c:c(2:3)');
+                        done();
+                    }).catch(function(err) {
                         done(err);
                     });
             });
@@ -241,12 +249,12 @@ describe('Модуль Join.', function() {
             it('Функцией', function(done) {
                 new Join([
                     { file: files.a },
-                    'c',
-                    { file: files.b }
-                ]).afterEachFile(function(i, file) {
-                        return '(' + i + ':' + file;
+                    { file: files.b },
+                    'c'
+                ]).afterEachFile(function(item, index, length) {
+                        return ':' + item.file + '(' + index + ':' + length + ')';
                     }).toString().then(function(content) {
-                        assert.equal(content, 'var a;\n(0:' + files.a + 'cvar b;\n(1:' + files.b);
+                        assert.equal(content, 'var a;\n:' + files.a + '(0:2)var b;\n:' + files.b + '(1:2)c');
                         done();
                     }).catch(function(err) {
                         done(err);

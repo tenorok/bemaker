@@ -15,7 +15,7 @@ const path = require('path'),
  * Опции сборки.
  *
  * @typedef {{}} Make~Config
- * @property {string} outdir Директория для сохранения файлов
+ * @property {string} outdir Директория для сохранения файлов (будет создана, если она не существует)
  * @property {string} outname Имя для сохраняемых файлов
  * @property {string[]} directories Директории для поиска блоков (уровни переопределения)
  * @property {string[]} [extensions] Расширения файлов к сборке, по умолчанию собираются все найденные расширения
@@ -32,10 +32,11 @@ const path = require('path'),
  * предваряющей и последующей строки для каждого файла.
  *
  * @callback Make~beforeAfterCallback
- * @param {number} index Индекс файла
  * @param {string} absPath Абсолютный путь до файла
  * @param {string} relPath Относительный путь до файла
  * @param {string} extname Полное расширение файла (например для `file.ie.css` будет `.ie.css`)
+ * @param {number} index Индекс файла
+ * @param {number} length Количество файлов
  */
 
 /**
@@ -172,7 +173,7 @@ Make.prototype = {
      * на основании поля `blocks` в опциях сборки.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Make#filter
+     * @emits Make#filter
      * @returns {Make~poolBlocks}
      */
     filter: function(blocks) {
@@ -217,7 +218,7 @@ Make.prototype = {
      * Сгруппировать файлы блоков по расширениям.
      *
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Make#extension
+     * @emits Make#extension
      * @returns {Make~groupsByExtensions}
      */
     groupByExtensions: function(blocks) {
@@ -247,8 +248,10 @@ Make.prototype = {
     /**
      * Сохранить файлы по расширениям.
      *
+     * Директория для сохранения файлов будет создана, если она не существует.
+     *
      * @param {Make~groupsByExtensions} groups Файлы блоков по расширениям
-     * @fires Make#save
+     * @emits Make#save
      * @returns {Promise} Make~contentByExtensions
      */
     writeFilesByExtensions: function(groups) {
@@ -261,7 +264,9 @@ Make.prototype = {
             .then(function() {
                 return Promise.all(Object.keys(content).reduce(function(promises, extname) {
                     var filePath = path.join(this._config.outdir, this._config.outname + extname);
-                    promises.push(fs.fsAsync.writeFileAsync(filePath, content[extname]));
+                    promises.push(fs.fsAsync.mkdirsAsync(this._config.outdir).then(function() {
+                        return fs.fsAsync.writeFileAsync(filePath, content[extname]);
+                    }));
 
                     /**
                      * Событие сохранения собранного для расширения файла.
@@ -306,8 +311,8 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocks} blocks Список блоков
-     * @fires Depend#loop
-     * @fires Depend#unexist
+     * @emits Depend#loop
+     * @emits Depend#unexist
      * @returns {Make~poolBlocks}
      */
     _bindDependEvents: function(blocks) {
@@ -329,7 +334,7 @@ Make.prototype = {
              * Прокси для события обнаружения циклической зависимости в модуле `Depend`.
              *
              * @event Depend#loop
-             * @type {string[]} branch Список имён модулей в порядке зависимостей
+             * @type {Depend~LoopBranch}
              */
             this._emitProxyEvent('loop', arguments);
         }.bind(this));
@@ -353,6 +358,7 @@ Make.prototype = {
     /**
      * Установить предваряющую и последующую строки вокруг каждого файла.
      *
+     * @private
      * @param {Join} group Группа файлов с единым расширением
      * @param {string} extname Расширение группы файлов
      * @returns {Join} Модифицированный экземпляр
@@ -362,16 +368,16 @@ Make.prototype = {
             cwd = this._config.cwd;
 
         ['before', 'after'].forEach(function(place) {
-            if(config[place]) {
-                if(typeof config[place] === 'function') {
-                    group[place + 'EachFile'](function(i, file) {
-                        return config[place].call(this, i, file, path.relative(cwd, file), extname);
-                    });
-                } else {
-                    group[place + 'EachFile'](function(i, file) {
-                        return '/* ' + place + ': ' + path.relative(cwd, file) + ' */\n';
-                    });
-                }
+            if(!config[place]) return;
+
+            if(typeof config[place] === 'function') {
+                group[place + 'EachFile'](function(item, index, length) {
+                    return config[place].call(this, item.file, path.relative(cwd, item.file), extname, index, length);
+                });
+            } else {
+                group[place + 'EachFile'](function(item) {
+                    return '/* ' + place + ': ' + path.relative(cwd, item.file) + ' */\n';
+                });
             }
         });
 
@@ -383,8 +389,8 @@ Make.prototype = {
      * на которых они присутствуют.
      *
      * @private
-     * @fires Make#level
-     * @fires Make#block
+     * @emits Make#level
+     * @emits Make#block
      * @returns {Promise} Make~poolBlocksList
      */
     _getBlocksList: function() {
@@ -423,47 +429,52 @@ Make.prototype = {
     },
 
     /**
-     * Получить файлы блоков на каждом уровне переопределения.
+     * Получить файлы и символьные ссылки блоков на каждом уровне переопределения.
      *
      * @private
      * @param {Make~poolBlocksList} blocks Список блоков и уровни переопределения, на которых они присутствуют
-     * @fires Make#file
+     * @emits Make#file
      * @returns {Promise} Make~poolBlocksLevelsFiles
      */
     _getLevelsFiles: function(blocks) {
         var emitter = this._emitter;
         return Promise.all(blocks.get().reduce(function(promises, block, blockIndex) {
             return promises.concat(block.levels.reduce(function(promises, level, levelIndex) {
-                return promises.concat(new Walk(path.join(level.path, block.name)).filesRecur().spread(function(list) {
-                    blocks.get()[blockIndex].levels[levelIndex].files =
-                        list.names.reduce(function(files, fileName, fileIndex) {
-                            var extname = '.' + fileName.split('.').slice(1).join('.'),
-                                basename = path.basename(fileName, extname),
-                                selector = new Selector(basename),
-                                filePath = list.absolute[fileIndex];
+                return promises.concat(new Walk(path.join(level.path, block.name))
+                    .listRecur(function(name, stats) {
+                        return stats.isFile() || stats.isSymbolicLink();
+                    })
+                    .spread(function(list) {
+                        blocks.get()[blockIndex].levels[levelIndex].files =
+                            list.names.reduce(function(files, fileName, fileIndex) {
+                                var extname = '.' + fileName.split('.').slice(1).join('.'),
+                                    basename = path.basename(fileName, extname),
+                                    selector = new Selector(basename),
+                                    filePath = list.absolute[fileIndex];
 
-                            if(!selector.block()) {
-                                selector.block(block.name);
-                            }
+                                if(!selector.block()) {
+                                    selector.block(block.name);
+                                }
 
-                            /**
-                             * Событие чтения файла блока.
-                             *
-                             * @event Make#file
-                             * @type {{}}
-                             * @property {string} path Путь до файла
-                             */
-                            emitter.emit('file', { path: filePath });
+                                /**
+                                 * Событие чтения файла блока.
+                                 *
+                                 * @event Make#file
+                                 * @type {{}}
+                                 * @property {string} path Путь до файла
+                                 */
+                                emitter.emit('file', { path: filePath });
 
-                            files.push({
-                                basename: basename,
-                                extname: extname,
-                                path: filePath,
-                                selector: selector
-                            });
-                            return files;
-                        }, []);
-                }));
+                                files.push({
+                                    basename: basename,
+                                    extname: extname,
+                                    path: filePath,
+                                    selector: selector
+                                });
+                                return files;
+                            }, []);
+                    })
+                );
             }, []));
         }, [])).then(function() {
                 return blocks;
@@ -475,7 +486,7 @@ Make.prototype = {
      *
      * @private
      * @param {Make~poolBlocksLevelsFiles} blocks Список блоков, их уровни переопределения и файлы
-     * @fires Make#depend
+     * @emits Make#depend
      * @returns {Promise} Make~poolBlocks
      */
     _getBlocksDepends: function(blocks) {
