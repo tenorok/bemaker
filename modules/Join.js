@@ -143,6 +143,7 @@ Join.prototype = {
      * @param {Join~DataItem} item Элемент данных
      * @param {number} index Индекс элемента
      * @param {number} length Количество элементов
+     * @returns {string} Сформированная строка
      */
 
     /**
@@ -164,6 +165,7 @@ Join.prototype = {
      * @param {Join~DataItem} item Элемент данных в виде хеш-карты файла
      * @param {number} index Индекс файла
      * @param {number} length Количество файлов
+     * @returns {string} Сформированная строка
      */
 
     /**

@@ -37,6 +37,7 @@ const path = require('path'),
  * @param {string} extname Полное расширение файла (например для `file.ie.css` будет `.ie.css`)
  * @param {number} index Индекс файла
  * @param {number} length Количество файлов
+ * @returns {string} Сформированная строка
  */
 
 /**

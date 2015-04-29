@@ -701,7 +701,7 @@ describe('Модуль Make.', function() {
                 assert.equal(ext, '.ie.css');
                 assert.equal(i, 0);
                 assert.equal(len, 1);
-                return '/* after */\n';1
+                return '/* after */\n';
             }
         }).build().then(function() {
             assert.equal(
